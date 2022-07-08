@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] GameObject cameraHolder;
     [SerializeField] float sensitivity;
+    PhotonView PV;
 
     // private Vector3 globalVelocity = new Vector3();
 
@@ -16,11 +18,23 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float airFrictionCoefficient;
     [SerializeField] private float airFrictionExponent;
 
-    void Start() {
+    void Awake() {
+        PV = GetComponent<PhotonView>();
         rb = GetComponent<Rigidbody>();
     }
 
+    void Start() {
+        if(!PV.IsMine) {
+            Destroy(GetComponentInChildren<Camera>().gameObject);
+            // Destroy(rb);
+        }
+    }
+
     void Update() {
+        if(!PV.IsMine) {
+            return;
+        }
+
         Look();
         Glide();
     }
