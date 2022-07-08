@@ -31,8 +31,8 @@ public class PlayerController : MonoBehaviour
 
         // Roll
         // get difference between desired and actual horizontal angle (angle along the xz-plane). Roll depending on that
-        desiredXZAngle = transform.up
-        actualXZAngle = 
+        // desiredXZAngle = transform.up
+        // actualXZAngle = 
         
         // Pitch
         transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
