@@ -6,6 +6,7 @@ using Photon.Pun;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] GameObject cameraHolder;
+    [SerializeField] float keyboardSensitivity;
     [SerializeField] float sensitivity;
     PhotonView PV;
 
@@ -35,13 +36,16 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        MouseLook();
+        Look();
         Glide();
     }
 
-    // void Look() {
-    //     transform.Rotate(Vector3.forward * Input.GetKey(KeyCode.A) * Time.deltaTime);
-    // }
+    void Look() {
+        transform.Rotate(-Vector3.forward * Input.GetAxisRaw("Horizontal") * Time.deltaTime * keyboardSensitivity);
+
+        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * Time.deltaTime * keyboardSensitivity);
+        // transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * Time.deltaTime * keyboardSensitivity / 1.5f);
+    }
 
     void MouseLook() {
         // Yaw *not really because world space
@@ -64,7 +68,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log(deltaXZAngle);
             Debug.Log(actualXZAngle);
         }
-        // transform.Rotate(-Vector3.forward * transform.localEulerAngles.z);
+        transform.Rotate(-Vector3.forward * transform.localEulerAngles.z/100);
 
         // Debug.Log(Mathf.Atan(transform.forward.z/transform.forward.x));
         // Debug.Log(desiredXZAngle);
@@ -85,6 +89,10 @@ public class PlayerController : MonoBehaviour
 
         Debug.DrawLine(transform.position, transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
+
+        if(Input.GetKeyDown(KeyCode.Space)) {
+            rb.AddForce(transform.forward * 100);
+        }
         // rb.velocity += gliderNormalForce * Time.deltaTime;
     }
 }
