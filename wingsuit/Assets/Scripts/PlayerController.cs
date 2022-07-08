@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] GameObject cameraHolder;
     [SerializeField] float keyboardSensitivity;
     [SerializeField] float sensitivity;
+    TrailRenderer trail;
     PhotonView PV;
     PlayerManager playerManager;
 
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
         PV = GetComponent<PhotonView>();
         rb = GetComponent<Rigidbody>();
         playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
+        trail = GetComponent<TrailRenderer>();
     }
 
     void Start() {
@@ -99,8 +101,12 @@ public class PlayerController : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
 
-        if(Input.GetKeyDown(KeyCode.Space)) {
-            rb.AddForce(transform.forward * 100);
+        if(Input.GetKey(KeyCode.Space)) {
+            rb.AddForce(transform.forward * 10);
+            trail.emitting = true;
+        }
+        else {
+            trail.emitting = false;
         }
         // rb.velocity += gliderNormalForce * Time.deltaTime;
     }
