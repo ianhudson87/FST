@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float keyboardSensitivity;
     [SerializeField] float sensitivity;
     PhotonView PV;
+    PlayerManager playerManager;
 
     // private Vector3 globalVelocity = new Vector3();
 
@@ -22,6 +23,7 @@ public class PlayerController : MonoBehaviour
     void Awake() {
         PV = GetComponent<PhotonView>();
         rb = GetComponent<Rigidbody>();
+        playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
     }
 
     void Start() {
@@ -59,7 +61,7 @@ public class PlayerController : MonoBehaviour
         float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
 
         float deltaXZAngle = (desiredXZAngle % Mathf.PI) - (actualXZAngle % Mathf.PI);
-        transform.Rotate(Vector3.forward * deltaXZAngle / Mathf.PI * 180 * Time.deltaTime);
+        // transform.Rotate(Vector3.forward * deltaXZAngle / Mathf.PI * 180 * Time.deltaTime);
         try{
             // if(transform.localEulerAngles.z < 90 && transform.localEulerAngles.z > -90)
             
@@ -68,7 +70,14 @@ public class PlayerController : MonoBehaviour
             Debug.Log(deltaXZAngle);
             Debug.Log(actualXZAngle);
         }
-        transform.Rotate(-Vector3.forward * transform.localEulerAngles.z/100);
+        Debug.Log(transform.localEulerAngles.z);
+
+        if (transform.localEulerAngles.z > 180) {
+            transform.Rotate(-Vector3.forward * transform.localEulerAngles.z/100);
+        }
+        else {
+            transform.Rotate(-Vector3.forward * (360-transform.localEulerAngles.z)/100);
+        }
 
         // Debug.Log(Mathf.Atan(transform.forward.z/transform.forward.x));
         // Debug.Log(desiredXZAngle);
@@ -94,5 +103,27 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(transform.forward * 100);
         }
         // rb.velocity += gliderNormalForce * Time.deltaTime;
+    }
+
+    void OnCollisionEnter(Collision other) {
+        if(PV.IsMine) {
+            if(other.gameObject.GetComponent<PlayerController>()) {
+                Debug.Log(GameManager.Instance);
+                GameManager.Instance.RespawnPlayers();
+            }
+        }
+    }
+
+    public void Respawn()
+    {
+        PV.RPC("RPC_Respawn", RpcTarget.All);
+        // tell this character controller to respawn
+    }
+    [PunRPC] void RPC_Respawn()
+    {
+        if(!PV.IsMine)
+            return;
+
+        playerManager.Respawn();
     }
 }

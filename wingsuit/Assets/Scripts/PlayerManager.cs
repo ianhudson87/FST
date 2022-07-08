@@ -29,7 +29,7 @@ public class PlayerManager : MonoBehaviour
         // Transform spawnpoint = SpawnManager.instance.GetSpawnPoint((int) PV.Owner.CustomProperties["teamIndex"]);
         Debug.Log("got here");
         // controllerObj = PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerController"), spawnpoint.position, spawnpoint.rotation, 0, new object[] { PV.ViewID });
-        controllerObj = PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerController"), new Vector3(100,100,100), Quaternion.identity, 0, new object[] { PV.ViewID });
+        controllerObj = PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerController"), new Vector3(100 + Random.Range(-10,10), 100,100), Quaternion.identity, 0, new object[] { PV.ViewID });
     }
 
     public void Die()
