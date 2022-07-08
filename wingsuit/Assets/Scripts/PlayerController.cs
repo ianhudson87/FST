@@ -90,8 +90,8 @@ public class PlayerController : MonoBehaviour
         Debug.DrawLine(transform.position, transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
 
-        if(Input.GetKeyDown(KeyCode.Space)) {
-            rb.AddForce(transform.forward * 100);
+        if(Input.GetKey(KeyCode.Space)) {
+            rb.AddForce(transform.forward);
         }
         // rb.velocity += gliderNormalForce * Time.deltaTime;
     }
