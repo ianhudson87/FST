@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        Look();
+        MouseLook();
         Glide();
     }
 
@@ -62,23 +62,27 @@ public class PlayerController : MonoBehaviour
         float desiredXZAngle = Mathf.Atan(transform.forward.z/(transform.forward.x + 1e-9f)) + ((transform.forward.x < 0) ? Mathf.PI : 0);
         float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
 
-        float deltaXZAngle = (desiredXZAngle % Mathf.PI) - (actualXZAngle % Mathf.PI);
-        // transform.Rotate(Vector3.forward * deltaXZAngle / Mathf.PI * 180 * Time.deltaTime);
-        try{
-            // if(transform.localEulerAngles.z < 90 && transform.localEulerAngles.z > -90)
-            
+        float deltaXZAngle = (desiredXZAngle - actualXZAngle) / Mathf.PI * 180;
+        while(deltaXZAngle > 360f) {
+            deltaXZAngle -= 360f;
         }
-        catch {
-            Debug.Log(deltaXZAngle);
-            Debug.Log(actualXZAngle);
+        while(deltaXZAngle < 0f) {
+            deltaXZAngle += 360f;
         }
-        Debug.Log(transform.localEulerAngles.z);
 
-        if (transform.localEulerAngles.z > 180) {
-            transform.Rotate(-Vector3.forward * transform.localEulerAngles.z/100);
+        if(deltaXZAngle < 180) {
+            transform.Rotate(Vector3.forward * (deltaXZAngle) * Time.deltaTime* 30);
         }
         else {
-            transform.Rotate(-Vector3.forward * (360-transform.localEulerAngles.z)/100);
+            transform.Rotate(Vector3.forward * (deltaXZAngle - 360) * Time.deltaTime * 30);
+        }
+        // transform.Rotate(-Vector3.forward * deltaXZAngle / Mathf.PI * 180 * Time.deltaTime);
+
+        if (transform.localEulerAngles.z < 180) {
+            transform.Rotate(-Vector3.forward * transform.localEulerAngles.z * Time.deltaTime * 3);
+        }
+        else {
+            transform.Rotate(Vector3.forward * (360-transform.localEulerAngles.z) * Time.deltaTime * 3);
         }
 
         // Debug.Log(Mathf.Atan(transform.forward.z/transform.forward.x));
