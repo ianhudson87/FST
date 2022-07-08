@@ -136,6 +136,7 @@ public class Launcher : MonoBehaviourPunCallbacks
                 // room does not exist any more. maybe because no more players in the room
                 continue;
             }
+            Debug.Log("instantiate");
             Instantiate(roomListItemPrefab, roomListContent).GetComponent<RoomListItem>().SetUp(roomList[i]);
         }
     }
