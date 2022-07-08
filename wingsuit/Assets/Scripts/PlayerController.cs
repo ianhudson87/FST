@@ -35,20 +35,41 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        Look();
+        MouseLook();
         Glide();
     }
 
-    void Look() {
-        // Yaw
-        transform.Rotate(Vector3.back * Input.GetAxisRaw("Mouse X") * sensitivity);
+    // void Look() {
+    //     transform.Rotate(Vector3.forward * Input.GetKey(KeyCode.A) * Time.deltaTime);
+    // }
+
+    void MouseLook() {
+        // Yaw *not really because world space
+        transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * sensitivity, Space.World);
+        // transform.Rotate(Vector3.up,)
+        // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
 
         // Roll
         // get difference between desired and actual horizontal angle (angle along the xz-plane). Roll depending on that
-        // desiredXZAngle = transform.up
-        // actualXZAngle = 
+        float desiredXZAngle = Mathf.Atan(transform.forward.z/(transform.forward.x + 1e-9f)) + ((transform.forward.x < 0) ? Mathf.PI : 0);
+        float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
+
+        float deltaXZAngle = (desiredXZAngle % Mathf.PI) - (actualXZAngle % Mathf.PI);
+        transform.Rotate(Vector3.forward * deltaXZAngle / Mathf.PI * 180 * Time.deltaTime);
+        try{
+            // if(transform.localEulerAngles.z < 90 && transform.localEulerAngles.z > -90)
+            
+        }
+        catch {
+            Debug.Log(deltaXZAngle);
+            Debug.Log(actualXZAngle);
+        }
+        // transform.Rotate(-Vector3.forward * transform.localEulerAngles.z);
+
+        // Debug.Log(Mathf.Atan(transform.forward.z/transform.forward.x));
+        // Debug.Log(desiredXZAngle);
         
-        // Pitch
+        // Pitch *not really because world space
         transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
 
         // verticalLookRotation += Input.GetAxisRaw("Mouse Y") * sensitivity;
@@ -58,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
     void Glide() {
         // get the component of velocity in the direction perpendicular to the glider
-        Vector3 gliderNormalForce = transform.forward * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.forward, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-transform.forward, rb.velocity));
+        Vector3 gliderNormalForce = transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-transform.up, rb.velocity));
 
         // Debug.Log(gliderNormalForce + " : " + rb.velocity);
 
