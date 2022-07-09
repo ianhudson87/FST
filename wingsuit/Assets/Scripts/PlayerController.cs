@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, Teleportable
 {
     [SerializeField] GameObject cameraHolder;
     [SerializeField] float controllerSensitivity;
@@ -208,5 +208,13 @@ public class PlayerController : MonoBehaviour
             return;
 
         playerManager.Respawn();
+    }
+    void Teleportable.Teleport(Vector3 destination) {
+        Debug.Log("Instant Transmission!");
+        Vector3 vel = rb.velocity;
+        rb.isKinematic = true;
+        transform.position = destination;
+        rb.isKinematic = false;
+        rb.velocity = vel;
     }
 }
