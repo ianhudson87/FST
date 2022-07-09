@@ -1,3 +1,4 @@
+// using System.Diagnostics;
 // using System.Threading.Tasks.Dataflow; BAD
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ public class Portal : MonoBehaviour
 {
 
     private void OnTriggerEnter(Collider other) {
-        GetComponentInParent<PortalManager>().teleport(other);
+        Debug.Log("triggered");
+        GetComponentInParent<PortalManager>().teleport(other, this);
     }
 }
