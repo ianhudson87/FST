@@ -16,7 +16,7 @@ public class PortalManager : MonoBehaviour
             difference =  p2.transform.position - p1.transform.position;
         }
         Debug.Log("attempt instant transmission!");
-        Vector3 dest = other.gameObject.transform.position - difference * 0.991f;
+        Vector3 dest = other.gameObject.transform.position - difference * 0.95f;
         Debug.Log(other.gameObject.GetComponent<Teleportable>());
         other.gameObject.GetComponentInParent<Teleportable>()?.Teleport(dest);
     }
