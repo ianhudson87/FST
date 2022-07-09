@@ -6,11 +6,16 @@ using Photon.Pun;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] GameObject cameraHolder;
-    [SerializeField] float keyboardSensitivity;
+    [SerializeField] float controllerSensitivity;
     [SerializeField] float sensitivity;
+    [SerializeField] float gravity;
+    [SerializeField] GameObject model;
+    [SerializeField] float maxRollAngle;
     TrailRenderer trail;
     PhotonView PV;
     PlayerManager playerManager;
+    Vector3 gravityVector;
+    
 
     // private Vector3 globalVelocity = new Vector3();
 
@@ -26,6 +31,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
         trail = GetComponent<TrailRenderer>();
+        gravityVector = new Vector3(0, -gravity, 0);
     }
 
     void Start() {
@@ -36,28 +42,101 @@ public class PlayerController : MonoBehaviour
     }
 
     void Update() {
+        // if(transform.position.y < 5) {
+        //     rb.isKinematic = true;
+        //     transform.position += new Vector3(0, 50, 0);
+        //     rb.isKinematic = false;
+        // }
+
         if(!PV.IsMine) {
             return;
         }
 
         MouseLook();
+        ControllerLook();
+        Roll();
         Glide();
+        Gravity();
+    }
+
+    void Gravity() {
+        rb.AddForce(gravityVector);
     }
 
     void Look() {
-        transform.Rotate(-Vector3.forward * Input.GetAxisRaw("Horizontal") * Time.deltaTime * keyboardSensitivity);
+        transform.Rotate(-Vector3.forward * Input.GetAxisRaw("Horizontal") * Time.deltaTime * controllerSensitivity);
 
-        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * Time.deltaTime * keyboardSensitivity);
+        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * Time.deltaTime * controllerSensitivity);
         // transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * Time.deltaTime * keyboardSensitivity / 1.5f);
     }
 
+    // void MouseLookClickToRoll() {
+    //     // Yaw *not really because world space
+    //     transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * sensitivity, Space.World);
+    //     // transform.Rotate(Vector3.up,)
+    //     // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
+
+    //     // Roll. Only roll the model
+    //     if(Input.GetMouseButton(0)) {
+    //         model.transform.localEulerAngles += new Vector3(0, 0, 45 * Time.deltaTime);
+    //     }
+    //     if(Input.GetMouseButton(1)) {
+    //         model.transform.localEulerAngles += new Vector3(0, 0, -45 * Time.deltaTime);
+    //     }
+
+    //     // else if(Input.GetAxisRaw("Mouse X") > 0) {
+    //     //     model.transform.localEulerAngles = new Vector3(model.transform.localEulerAngles.x, model.transform.localEulerAngles.y, -80);
+    //     // }
+    //     // else {
+    //     //     model.transform.localEulerAngles = new Vector3(model.transform.localEulerAngles.x, model.transform.localEulerAngles.y, 0);
+    //     // }
+        
+    //     // Pitch *not really because world space
+    //     transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
+    // }
+
+    // void MouseLookSuperSharpTurns() {
+    //     // Yaw *not really because world space
+    //     transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * sensitivity, Space.World);
+    //     // transform.Rotate(Vector3.up,)
+    //     // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
+
+    //     // Roll. Only roll the model
+    //     if(Input.GetAxisRaw("Mouse X") < 0) {
+    //         model.transform.localEulerAngles = new Vector3(model.transform.localEulerAngles.x, model.transform.localEulerAngles.y, 80);
+    //     }
+    //     else if(Input.GetAxisRaw("Mouse X") > 0) {
+    //         model.transform.localEulerAngles = new Vector3(model.transform.localEulerAngles.x, model.transform.localEulerAngles.y, -80);
+    //     }
+    //     else {
+    //         model.transform.localEulerAngles = new Vector3(model.transform.localEulerAngles.x, model.transform.localEulerAngles.y, 0);
+    //     }
+        
+    //     // Pitch *not really because world space
+    //     transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
+    // }
     void MouseLook() {
         // Yaw *not really because world space
         transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * sensitivity, Space.World);
         // transform.Rotate(Vector3.up,)
         // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
+        
+        // Pitch *not really because world space
+        transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
+    }
 
-        // Roll
+    void ControllerLook() {
+        // Yaw *not really because world space
+        transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * controllerSensitivity, Space.World);
+        // transform.Rotate(Vector3.up,)
+        // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
+        
+        // Pitch *not really because world space
+        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * controllerSensitivity);
+    }
+
+    void Roll() {
+        // Roll. Only roll the model
         // get difference between desired and actual horizontal angle (angle along the xz-plane). Roll depending on that
         float desiredXZAngle = Mathf.Atan(transform.forward.z/(transform.forward.x + 1e-9f)) + ((transform.forward.x < 0) ? Mathf.PI : 0);
         float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
@@ -70,43 +149,37 @@ public class PlayerController : MonoBehaviour
             deltaXZAngle += 360f;
         }
 
-        if(deltaXZAngle < 180) {
-            transform.Rotate(Vector3.forward * (deltaXZAngle) * Time.deltaTime* 30);
+        if (((deltaXZAngle > 5  && deltaXZAngle < 180 - 5) || (deltaXZAngle > 180 + 5  && deltaXZAngle < 360 - 5))  && rb.velocity.magnitude > 5) {
+            // rotate to make the turn
+            if(model.transform.localEulerAngles.z < maxRollAngle || model.transform.localEulerAngles.z > (360 - maxRollAngle)) {// if we haven't already rotated maxRollAngle degrees to make the turn
+                if(deltaXZAngle < 180) {
+                    model.transform.Rotate(Vector3.forward * (deltaXZAngle) * Time.deltaTime* 50);
+                }
+                else {
+                    model.transform.Rotate(Vector3.forward * (deltaXZAngle - 360) * Time.deltaTime * 50);
+                }
+            }
+        }
+        // rotate back
+        if (model.transform.localEulerAngles.z < 180) {
+            model.transform.Rotate(-Vector3.forward * model.transform.localEulerAngles.z * Time.deltaTime * 10);
         }
         else {
-            transform.Rotate(Vector3.forward * (deltaXZAngle - 360) * Time.deltaTime * 30);
+            model.transform.Rotate(Vector3.forward * (360 - model.transform.localEulerAngles.z) * Time.deltaTime * 10);
         }
-        // transform.Rotate(-Vector3.forward * deltaXZAngle / Mathf.PI * 180 * Time.deltaTime);
-
-        if (transform.localEulerAngles.z < 180) {
-            transform.Rotate(-Vector3.forward * transform.localEulerAngles.z * Time.deltaTime * 3);
-        }
-        else {
-            transform.Rotate(Vector3.forward * (360-transform.localEulerAngles.z) * Time.deltaTime * 3);
-        }
-
-        // Debug.Log(Mathf.Atan(transform.forward.z/transform.forward.x));
-        // Debug.Log(desiredXZAngle);
-        
-        // Pitch *not really because world space
-        transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
-
-        // verticalLookRotation += Input.GetAxisRaw("Mouse Y") * sensitivity;
-        // verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90, 90);
-        // cameraHolder.transform.localEulerAngles = Vector3.left * verticalLookRotation;
     }
 
     void Glide() {
-        // get the component of velocity in the direction perpendicular to the glider
-        Vector3 gliderNormalForce = transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-transform.up, rb.velocity));
+        // get the component of velocity in the direction perpendicular to the glider (which is based on the orientation of the model)
+        Vector3 gliderNormalForce = model.transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-model.transform.up, rb.velocity));
 
         // Debug.Log(gliderNormalForce + " : " + rb.velocity);
 
-        Debug.DrawLine(transform.position, transform.position + gliderNormalForce, Color.blue, 0.1f);
+        Debug.DrawLine(model.transform.position, model.transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
 
-        if(Input.GetKey(KeyCode.Space)) {
-            rb.AddForce(transform.forward * 10);
+        if(Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0")) {
+            rb.AddForce(model.transform.forward * 50);
             trail.emitting = true;
         }
         else {
