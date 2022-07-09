@@ -209,12 +209,12 @@ public class PlayerController : MonoBehaviour, Teleportable
 
         playerManager.Respawn();
     }
-    void Teleportable.Teleport(Vector3 destination) {
+    public void Teleport(Vector3 destination) {
         Debug.Log("Instant Transmission!");
-        Vector3 vel = rb.velocity;
-        rb.isKinematic = true;
+        Vector3 vel = rb.velocity; // probably doesnt do anything
+        rb.isKinematic = true; // probably doesnt do anything
         transform.position = destination;
-        rb.isKinematic = false;
-        rb.velocity = vel;
+        rb.isKinematic = false; // probably doesnt do anything
+        rb.velocity = vel; // probably doesnt do anything
     }
 }
