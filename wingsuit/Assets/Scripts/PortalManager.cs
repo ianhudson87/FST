@@ -1,11 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class PortalManager : MonoBehaviour
 {
 
     [SerializeField] Portal p1, p2;
+    [SerializeField] Camera c1, c2;
+
+    PlayerController localPlayer = null;
+
+    void Start() {
+        
+    }
+
+    void Update() {
+        while(localPlayer == null) {
+            PlayerController[] playerControllers = GameObject.FindObjectsOfType<PlayerController>();
+            Debug.Log("Player Controolller" + playerControllers);
+            foreach (PlayerController pc in playerControllers) {
+                if(pc.PV.IsMine) {
+                    localPlayer = pc;
+                    break;
+                }
+            }
+        }
+
+        Vector3 cam2DeltaPos = p1.transform.position - localPlayer.gameObject.transform.position;
+        c2.transform.position = p2.transform.position - cam2DeltaPos;
+        c2.transform.rotation = localPlayer.gameObject.transform.rotation;
+        c2.nearClipPlane = cam2DeltaPos.magnitude;
+        // c2.farClipPlane = 1000;
+
+
+        Vector3 cam1DeltaPos = p2.transform.position - localPlayer.gameObject.transform.position;
+        c1.transform.position = p1.transform.position - cam1DeltaPos;
+        c1.transform.rotation = localPlayer.gameObject.transform.rotation;
+        c1.nearClipPlane = cam1DeltaPos.magnitude;
+        // c1.farClipPlane = 100;
+    }
 
     public void teleport(Collider other, Portal source) {
         Vector3 difference;

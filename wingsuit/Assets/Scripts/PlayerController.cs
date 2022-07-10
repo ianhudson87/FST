@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour, Teleportable
     [SerializeField] float maxRollAngle, rollStrength, rollSmoothness;
     
     TrailRenderer trail;
-    PhotonView PV;
+    public PhotonView PV;
     PlayerManager playerManager;
     Vector3 gravityVector;
     float rollAngle = 0;

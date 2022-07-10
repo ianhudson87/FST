@@ -801,6 +801,7 @@ MonoBehaviour:
   maxRollAngle: 89
   rollStrength: 1000
   rollSmoothness: 0.1
+  PV: {fileID: 0}
   airFrictionCoefficient: 50
   airFrictionExponent: 1
 --- !u!114 &-4390716306161293670
