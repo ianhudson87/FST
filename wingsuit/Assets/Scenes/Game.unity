@@ -647,7 +647,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapPrefab: {fileID: 4631852491706674610, guid: 47b5e4cd9c8ca6046bf8184317fde735, type: 3}
-  mapSize: {x: 0, y: 200, z: 0}
+  mapSize: {x: 200, y: 200, z: 200}
+  iters: 3
 --- !u!4 &764895612
 Transform:
   m_ObjectHideFlags: 0
