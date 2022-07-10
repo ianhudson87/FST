@@ -19,7 +19,7 @@ public class Cloud : MonoBehaviour
                 cloud.GetComponent<MeshCollider>().enabled = false;
             }
             if(cloud.GetComponent<MeshRenderer>() != null) {
-                cloud.GetComponent<MeshRenderer>().material.color = new Color(1.0f, 1.0f, 1.0f, 0.3f);
+                cloud.GetComponent<MeshRenderer>().material.color = new Color(1.0f, 1.0f, 1.0f, 0.5f);
             }
         }
     }

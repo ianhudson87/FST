@@ -10,11 +10,13 @@ public class PlayerController : MonoBehaviour, Teleportable
     [SerializeField] float sensitivity;
     [SerializeField] float gravity;
     [SerializeField] GameObject model;
-    [SerializeField] float maxRollAngle;
+    [SerializeField] float maxRollAngle, rollStrength, rollSmoothness;
+    
     TrailRenderer trail;
     PhotonView PV;
     PlayerManager playerManager;
     Vector3 gravityVector;
+    float rollAngle = 0;
     
 
     // private Vector3 globalVelocity = new Vector3();
@@ -54,9 +56,18 @@ public class PlayerController : MonoBehaviour, Teleportable
 
         MouseLook();
         ControllerLook();
-        Roll();
+        RollSine();
         Glide();
         Gravity();
+    }
+
+    public float GetSpeed() {
+        return rb.velocity.magnitude;
+    }
+
+    public Vector3 GetWorldHorizVel() {
+        // horizontal relative to the world
+        return rb.velocity - (Vector3.up * Vector3.Dot(rb.velocity, Vector3.up));
     }
 
     void Gravity() {
@@ -135,6 +146,35 @@ public class PlayerController : MonoBehaviour, Teleportable
         transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * controllerSensitivity);
     }
 
+
+
+    void RollSine() {
+        // Roll. Only roll the model
+        // get difference between desired and actual horizontal angle (angle along the xz-plane). Roll depending on that
+        float desiredXZAngle = Mathf.Atan(transform.forward.z/(transform.forward.x + 1e-9f)) + ((transform.forward.x < 0) ? Mathf.PI : 0);
+        float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
+
+        float deltaXZAngle = (desiredXZAngle - actualXZAngle) / Mathf.PI * 180;
+        deltaXZAngle = (deltaXZAngle % 360f + 360f) % 360f; // modulo
+
+        // Debug.Log(deltaXZAngle);
+
+        if (((deltaXZAngle > 0f  && deltaXZAngle < 180 - 0f) || (deltaXZAngle > 180 + 0f  && deltaXZAngle < 360 - 0f))  && (GetWorldHorizVel().magnitude / GetSpeed()) > 0.4 && (GetWorldHorizVel().magnitude > 10f)) {
+            float deltaAngleSin = Mathf.Sin(deltaXZAngle / 180f * Mathf.PI);
+            // rollAngle = Mathf.Pow(Mathf.Abs(deltaAngleSin), 0.2f) * Mathf.Sign(deltaAngleSin) * maxRollAngle;
+            // Debug.Log("sine of angle" + deltaAngleSin);
+            float desiredRollAngle = Mathf.Clamp(deltaAngleSin * rollStrength, -maxRollAngle, maxRollAngle);
+            rollAngle += (desiredRollAngle - rollAngle) * Time.deltaTime * (1/rollSmoothness);
+        }
+        else {
+            rollAngle = rollAngle * Mathf.Pow(0.1f, Time.deltaTime);
+        }
+        
+        Vector3 newLocalEulerAngles = model.transform.localEulerAngles;
+        newLocalEulerAngles.z = rollAngle;
+        model.transform.localEulerAngles = newLocalEulerAngles;
+    }
+
     void Roll() {
         // Roll. Only roll the model
         // get difference between desired and actual horizontal angle (angle along the xz-plane). Roll depending on that
@@ -142,31 +182,59 @@ public class PlayerController : MonoBehaviour, Teleportable
         float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
 
         float deltaXZAngle = (desiredXZAngle - actualXZAngle) / Mathf.PI * 180;
-        while(deltaXZAngle > 360f) {
-            deltaXZAngle -= 360f;
-        }
-        while(deltaXZAngle < 0f) {
-            deltaXZAngle += 360f;
-        }
+        deltaXZAngle = (deltaXZAngle % 360f + 360f) % 360f; // modulo
+        // while(deltaXZAngle > 360f) {
+        //     deltaXZAngle -= 360f;
+        // }
+        // while(deltaXZAngle < 0f) {
+        //     deltaXZAngle += 360f;
+        // }
 
-        if (((deltaXZAngle > 5  && deltaXZAngle < 180 - 5) || (deltaXZAngle > 180 + 5  && deltaXZAngle < 360 - 5))  && rb.velocity.magnitude > 5) {
-            // rotate to make the turn
-            if(model.transform.localEulerAngles.z < maxRollAngle || model.transform.localEulerAngles.z > (360 - maxRollAngle)) {// if we haven't already rotated maxRollAngle degrees to make the turn
-                if(deltaXZAngle < 180) {
-                    model.transform.Rotate(Vector3.forward * (deltaXZAngle) * Time.deltaTime* 50);
-                }
-                else {
-                    model.transform.Rotate(Vector3.forward * (deltaXZAngle - 360) * Time.deltaTime * 50);
-                }
+        if (((deltaXZAngle > 2  && deltaXZAngle < 180 - 2) || (deltaXZAngle > 180 + 2  && deltaXZAngle < 360 - 2))  && rb.velocity.magnitude > 10) {
+            // roll to make the turn, but only if we are far away from the desired angle and we have enough speed
+            if(model.transform.localEulerAngles.z > maxRollAngle && model.transform.localEulerAngles.z < (360 - maxRollAngle))
+                Debug.Log("bad angle");
+            // if(model.transform.localEulerAngles.z < maxRollAngle || model.transform.localEulerAngles.z > (360 - maxRollAngle)) {
+                // if we haven't already rotated maxRollAngle degrees to make the turn
+            if(deltaXZAngle < 180) {
+                rollAngle += (deltaXZAngle) * Time.deltaTime * GetSpeed()/2;
+                // model.transform.Rotate(Vector3.forward * );
             }
-        }
-        // rotate back
-        if (model.transform.localEulerAngles.z < 180) {
-            model.transform.Rotate(-Vector3.forward * model.transform.localEulerAngles.z * Time.deltaTime * 10);
+            else {
+                rollAngle += (deltaXZAngle - 360) * Time.deltaTime * GetSpeed()/2;
+                // model.transform.Rotate(Vector3.forward * (deltaXZAngle - 360) * Time.deltaTime * 50);
+            }
+            // rollAngle = (rollAngle % 360f + 360f) % 360f; // modulo
+            // Debug.Log(rollAngle)
+
+            // don't go past maximum roll angle
+            rollAngle = Mathf.Clamp(rollAngle, -maxRollAngle, maxRollAngle);
+            // if(maxRollAngle < rollAngle && rollAngle <= 180f) {
+            //     rollAngle = maxRollAngle;
+            // }
+            // if(rollAngle < (360f - maxRollAngle) && rollAngle > 180f) {
+            //     rollAngle = 360f - maxRollAngle;
+            // }
+
+            // }
         }
         else {
-            model.transform.Rotate(Vector3.forward * (360 - model.transform.localEulerAngles.z) * Time.deltaTime * 10);
+            // rotate back
+            if (rollAngle > 0) {
+                rollAngle -= model.transform.localEulerAngles.z * Time.deltaTime * 1;
+                // model.transform.Rotate(-Vector3.forward * model.transform.localEulerAngles.z * Time.deltaTime * 2);
+            }
+            else {
+                rollAngle += (360 - model.transform.localEulerAngles.z) * Time.deltaTime * 1;
+                // model.transform.Rotate(Vector3.forward * (360 - model.transform.localEulerAngles.z) * Time.deltaTime * 2);
+            }
         }
+        
+        // Debug.Log(rollAngle);
+
+        Vector3 newLocalEulerAngles = model.transform.localEulerAngles;
+        newLocalEulerAngles.z = rollAngle;
+        model.transform.localEulerAngles = newLocalEulerAngles;
     }
 
     void Glide() {
