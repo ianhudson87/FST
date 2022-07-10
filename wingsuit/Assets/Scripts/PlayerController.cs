@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour, Teleportable
     PlayerManager playerManager;
     Vector3 gravityVector;
     float rollAngle = 0;
+    Vector3 gliderNormalForce;
     
 
     // private Vector3 globalVelocity = new Vector3();
@@ -61,8 +62,12 @@ public class PlayerController : MonoBehaviour, Teleportable
         Gravity();
     }
 
-    public float GetSpeed() {
-        return rb.velocity.magnitude;
+    public Vector3 GetGliderNormalForce() {
+        return gliderNormalForce;
+    }
+
+    public Vector3 GetVelocity() {
+        return rb.velocity;
     }
 
     public Vector3 GetWorldHorizVel() {
@@ -159,7 +164,7 @@ public class PlayerController : MonoBehaviour, Teleportable
 
         // Debug.Log(deltaXZAngle);
 
-        if (((deltaXZAngle > 0f  && deltaXZAngle < 180 - 0f) || (deltaXZAngle > 180 + 0f  && deltaXZAngle < 360 - 0f))  && (GetWorldHorizVel().magnitude / GetSpeed()) > 0.4 && (GetWorldHorizVel().magnitude > 10f)) {
+        if (((deltaXZAngle > 0f  && deltaXZAngle < 180 - 0f) || (deltaXZAngle > 180 + 0f  && deltaXZAngle < 360 - 0f))  && (GetWorldHorizVel().magnitude / GetVelocity().magnitude) > 0.4 && (GetWorldHorizVel().magnitude > 10f)) {
             float deltaAngleSin = Mathf.Sin(deltaXZAngle / 180f * Mathf.PI);
             // rollAngle = Mathf.Pow(Mathf.Abs(deltaAngleSin), 0.2f) * Mathf.Sign(deltaAngleSin) * maxRollAngle;
             // Debug.Log("sine of angle" + deltaAngleSin);
@@ -197,11 +202,11 @@ public class PlayerController : MonoBehaviour, Teleportable
             // if(model.transform.localEulerAngles.z < maxRollAngle || model.transform.localEulerAngles.z > (360 - maxRollAngle)) {
                 // if we haven't already rotated maxRollAngle degrees to make the turn
             if(deltaXZAngle < 180) {
-                rollAngle += (deltaXZAngle) * Time.deltaTime * GetSpeed()/2;
+                rollAngle += (deltaXZAngle) * Time.deltaTime * GetVelocity().magnitude / 2;
                 // model.transform.Rotate(Vector3.forward * );
             }
             else {
-                rollAngle += (deltaXZAngle - 360) * Time.deltaTime * GetSpeed()/2;
+                rollAngle += (deltaXZAngle - 360) * Time.deltaTime * GetVelocity().magnitude / 2;
                 // model.transform.Rotate(Vector3.forward * (deltaXZAngle - 360) * Time.deltaTime * 50);
             }
             // rollAngle = (rollAngle % 360f + 360f) % 360f; // modulo
@@ -239,7 +244,7 @@ public class PlayerController : MonoBehaviour, Teleportable
 
     void Glide() {
         // get the component of velocity in the direction perpendicular to the glider (which is based on the orientation of the model)
-        Vector3 gliderNormalForce = model.transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-model.transform.up, rb.velocity));
+        gliderNormalForce = model.transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-model.transform.up, rb.velocity));
 
         // Debug.Log(gliderNormalForce + " : " + rb.velocity);
 
