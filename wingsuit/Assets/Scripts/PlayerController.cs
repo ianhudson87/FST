@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class PlayerController : MonoBehaviour, Teleportable
+public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObservable
 {
     [SerializeField] GameObject cameraHolder;
     [SerializeField] float controllerSensitivity;
@@ -42,6 +42,10 @@ public class PlayerController : MonoBehaviour, Teleportable
             Destroy(GetComponentInChildren<Camera>().gameObject);
             // Destroy(rb);
         }
+        else {
+            // disable your own trail for yourself
+            GetComponent<TrailRenderer>().enabled = false;
+        }
     }
 
     void Update() {
@@ -60,6 +64,30 @@ public class PlayerController : MonoBehaviour, Teleportable
         RollSine();
         Glide();
         Gravity();
+        Boost();
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        Debug.Log("photon update");
+        // sync position and rotation and do lag compensation
+        if (stream.IsWriting)
+        {
+            Debug.Log("writing" + PV.Owner.NickName + " " + rb.position + " " + transform.rotation);
+            stream.SendNext(rb.position);
+            stream.SendNext(transform.rotation);
+            stream.SendNext(rb.velocity);
+        }
+        else
+        {
+            Debug.Log("reading" + PV.Owner.NickName);
+            rb.position = (Vector3) stream.ReceiveNext();
+            transform.rotation = (Quaternion) stream.ReceiveNext();
+            rb.velocity = (Vector3) stream.ReceiveNext();
+
+            float lag = Mathf.Abs((float) (PhotonNetwork.Time - info.SentServerTime));
+            rb.position += rb.velocity * lag;
+        }
     }
 
     public Vector3 GetGliderNormalForce() {
@@ -250,7 +278,10 @@ public class PlayerController : MonoBehaviour, Teleportable
 
         Debug.DrawLine(model.transform.position, model.transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
+        // rb.velocity += gliderNormalForce * Time.deltaTime;
+    }
 
+    void Boost() {
         if(Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0")) {
             rb.AddForce(model.transform.forward * 50);
             trail.emitting = true;
@@ -258,7 +289,6 @@ public class PlayerController : MonoBehaviour, Teleportable
         else {
             trail.emitting = false;
         }
-        // rb.velocity += gliderNormalForce * Time.deltaTime;
     }
 
     void OnCollisionEnter(Collision other) {

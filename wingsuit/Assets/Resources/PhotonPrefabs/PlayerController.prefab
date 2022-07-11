@@ -722,8 +722,6 @@ GameObject:
   - component: {fileID: 6545239161488695716}
   - component: {fileID: 6545239161488695727}
   - component: {fileID: -4390716306161293670}
-  - component: {fileID: -3790304913963094228}
-  - component: {fileID: 8137874435949392286}
   - component: {fileID: -9209018487394022740}
   m_Layer: 0
   m_Name: PlayerController
@@ -801,8 +799,8 @@ MonoBehaviour:
   maxRollAngle: 89
   rollStrength: 1000
   rollSmoothness: 0.1
-  PV: {fileID: 0}
-  airFrictionCoefficient: 50
+  PV: {fileID: -4390716306161293670}
+  airFrictionCoefficient: 25
   airFrictionExponent: 1
 --- !u!114 &-4390716306161293670
 MonoBehaviour:
@@ -823,43 +821,10 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
-  - {fileID: -3790304913963094228}
-  - {fileID: 8137874435949392286}
+  - {fileID: 6545239161488695727}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &-3790304913963094228
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6545239161488695717}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64179f3720bbfe947b7724caa67b7c1d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizeVelocity: 1
-  m_SynchronizeAngularVelocity: 0
-  m_TeleportEnabled: 1
-  m_TeleportIfDistanceGreaterThan: 3
---- !u!114 &8137874435949392286
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6545239161488695717}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
-  m_UseLocal: 1
 --- !u!96 &-9209018487394022740
 TrailRenderer:
   serializedVersion: 2

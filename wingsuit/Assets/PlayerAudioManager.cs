@@ -23,9 +23,9 @@ public class PlayerAudioManager : MonoBehaviour
 
     void TurbulanceAudio() {
         float gliderNormalForceMagnitude = playerController.GetGliderNormalForce().magnitude;
-        Debug.Log("normal mag" + gliderNormalForceMagnitude);
+        // Debug.Log("normal mag" + gliderNormalForceMagnitude);
         float turbulanceAudioVolume = Mathf.Clamp((gliderNormalForceMagnitude - turbulanceAudioMinNormalMagnitude) / (turbulanceAudioMaxNormalMagnitude - turbulanceAudioMinNormalMagnitude), 0, 1);
-        Debug.Log("volu" + turbulanceAudioVolume);
+        // Debug.Log("volu" + turbulanceAudioVolume);
         turbulanceAudioSrc.volume = turbulanceAudioVolume;
     }
 }

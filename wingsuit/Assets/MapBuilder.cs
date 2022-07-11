@@ -12,11 +12,12 @@ public class MapBuilder : MonoBehaviour
         for(int i = -iters; i <= iters; i++) {
             for(int j = -iters; j <= iters; j++) {
                 for(int k = -iters; k <= iters; k++) {
-                    Instantiate(mapPrefab, transform.position + new Vector3(i*mapSize.x, j*mapSize.y, k*mapSize.z), Quaternion.identity);
+                    GameObject mapCopy = Instantiate(mapPrefab, transform.position + new Vector3(i*mapSize.x, j*mapSize.y, k*mapSize.z), Quaternion.identity);
+                    mapCopy.transform.SetParent(this.transform);
                 }
             }
         }
         // Instantiate(mapPrefab, transform.position, Quaternion.identity);
-        Destroy(this);
+        // Destroy(this);
     }
 }
