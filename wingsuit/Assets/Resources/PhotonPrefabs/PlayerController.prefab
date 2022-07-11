@@ -687,6 +687,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6545239161158861690}
+  - component: {fileID: 9131010447500073426}
   m_Layer: 0
   m_Name: CameraHolder
   m_TagString: Untagged
@@ -701,14 +702,30 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6545239161158861691}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.08715578, y: 0, z: 0, w: 0.9961947}
+  m_LocalPosition: {x: 0, y: 1.83, z: -9.23}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 5123505198466193693}
   m_Father: {fileID: 6545239161488695720}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 10, y: 0, z: 0}
+--- !u!114 &9131010447500073426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6545239161158861691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42a6a8d4637008546814d4e85c96ec42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  camMinSpeed: 150
+  camMaxSpeed: 170
+  camDistMultiplier: 3
+  pc: {fileID: 6545239161488695727}
 --- !u!1 &6545239161488695717
 GameObject:
   m_ObjectHideFlags: 0
@@ -1044,13 +1061,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7732860601457745522}
-  m_LocalRotation: {x: 0.08711897, y: -0, z: -0, w: 0.99619794}
-  m_LocalPosition: {x: -0.03, y: 2.8, z: -7.72}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6545239161158861690}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 9.996, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &8165813475314679617
 Camera:
   m_ObjectHideFlags: 0
@@ -1076,7 +1093,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 20000
-  field of view: 60
+  field of view: 75
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
