@@ -10,16 +10,56 @@ public class GameManager : MonoBehaviourPunCallbacks
     public static GameManager Instance; // singleton
     Player tagger;
     [SerializeField] PhotonView PV;
+    [SerializeField] float startingTimeToWin;
+    Dictionary<Player, float> playersTimeToWin = new Dictionary<Player, float>(); // only used by master client
     // Dictionary<int, int> teamPoints = new Dictionary<int, int>();
 
     void Awake() {
         Instance = this;
+        foreach(Player p in PhotonNetwork.PlayerList) {
+            // Hashtable hash = new Hashtable();
+            playersTimeToWin.Add(p, startingTimeToWin);
+        }
+        SyncPlayersTimeToWin();
     }
 
     void Start() {
         // choose a tagger and sync it across all players
         if(PhotonNetwork.IsMasterClient) {
             SetTagger(ChooseRandomPlayer());
+        }
+    }
+
+    void Update() {
+        if(PhotonNetwork.IsMasterClient) {
+            UpdatePlayersTimeToWin();
+            SyncPlayersTimeToWin();
+        }
+        // foreach(Player p in PhotonNetwork.PlayerList) {
+        //     Debug.Log("player " + p + ", time: " + p.CustomProperties["timeToWin"]);
+        // }
+    }
+
+    void UpdatePlayersTimeToWin() {
+        // change the local dictionary values
+        foreach(Player p in PhotonNetwork.PlayerList) {
+            if(p == tagger) {
+                playersTimeToWin[p] -= Time.deltaTime;
+                // if(p.CustomProperties.ContainsKey("timeToWin")) {
+                //     Hashtable hash = new Hashtable();
+                //     hash.Add("timeToWin", (float) p.CustomProperties["timeToWin"] - Time.deltaTime);
+                //     p.SetCustomProperties(hash);
+                // }
+            }
+        }
+    }
+
+    void SyncPlayersTimeToWin() {
+        // sync the local dictionary values to the custom properties
+        foreach(Player p in PhotonNetwork.PlayerList) {
+            Hashtable hash = new Hashtable();
+            hash.Add("timeToWin", playersTimeToWin[p]);
+            p.SetCustomProperties(hash);
         }
     }
 

@@ -73,14 +73,14 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         // sync position and rotation and do lag compensation
         if (stream.IsWriting)
         {
-            Debug.Log("writing" + PV.Owner.NickName + " " + rb.position + " " + transform.rotation);
+            // Debug.Log("writing" + PV.Owner.NickName + " " + rb.position + " " + transform.rotation);
             stream.SendNext(rb.position);
             stream.SendNext(transform.rotation);
             stream.SendNext(rb.velocity);
         }
         else
         {
-            Debug.Log("reading" + PV.Owner.NickName);
+            // Debug.Log("reading" + PV.Owner.NickName);
             rb.position = (Vector3) stream.ReceiveNext();
             transform.rotation = (Quaternion) stream.ReceiveNext();
             rb.velocity = (Vector3) stream.ReceiveNext();

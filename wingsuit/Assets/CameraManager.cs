@@ -15,7 +15,6 @@ public class CameraManager : MonoBehaviour
     void Update() {
         float speedPercentage = Mathf.Clamp((pc.GetVelocity().magnitude - camMinSpeed) / (camMaxSpeed-camMinSpeed), 0, 1);
         transform.localPosition = cameraDefaultPos * (speedPercentage * (camDistMultiplier - 1) + 1);
-        Debug.Log("precentage" + speedPercentage);
     }
 
 }
