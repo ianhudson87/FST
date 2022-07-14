@@ -169,6 +169,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PV: {fileID: 59882791}
   startingScore: 20
+  tagCooldownTime: 5
 --- !u!114 &59882791
 MonoBehaviour:
   m_ObjectHideFlags: 0

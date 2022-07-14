@@ -42,6 +42,7 @@ MonoBehaviour:
   - RPC_Respawn
   - RPC_SetTagger
   - RPC_SendNotification
+  - RPC_SetTagCooldownTimer
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

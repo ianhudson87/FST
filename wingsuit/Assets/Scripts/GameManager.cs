@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         // This value is synced across all clients. Anyone can change it.
         set {
             tagger = value;
-            PV.RPC("RPC_SetTagger", RpcTarget.All, new object[] {tagger});
+            PV.RPC("RPC_SetTagger", RpcTarget.Others, new object[] {tagger});
         }
         get {
             return tagger;
@@ -21,6 +21,18 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     [SerializeField] PhotonView PV;
     [SerializeField] float startingScore;
+    [SerializeField] float tagCooldownTime;
+
+    float tagCooldownTimer = 0f;
+    public float SyncedTagCooldownTimer {
+        set {
+            tagCooldownTimer = value;
+            PV.RPC("RPC_SetTagCooldownTimer", RpcTarget.Others, new object[] {tagCooldownTimer});
+        }
+        get {
+            return tagCooldownTimer;
+        }
+    }
     Dictionary<Player, float> playerScores = new Dictionary<Player, float>(); // only used by master client.
     // Dictionary<int, int> teamPoints = new Dictionary<int, int>();
 
@@ -58,10 +70,19 @@ public class GameManager : MonoBehaviourPunCallbacks
         if(PhotonNetwork.IsMasterClient) {
             UpdatePlayerScores();
             SyncPlayerScores();
+            UpdateTagCooldownTimer();
         }
         // foreach(Player p in PhotonNetwork.PlayerList) {
         //     Debug.Log("player " + p + ", time: " + p.CustomProperties["timeToWin"]);
         // }
+        
+    }
+
+    void UpdateTagCooldownTimer() {
+        Debug.Log("cooldown timer: " + SyncedTagCooldownTimer);
+        if(SyncedTagCooldownTimer > 0) {
+            SyncedTagCooldownTimer = Mathf.Max(0, SyncedTagCooldownTimer - Time.deltaTime);
+        }
     }
 
     void UpdatePlayerScores() {
@@ -85,8 +106,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     public void ApplyTag(Player tagger, Player taggee) {
-        SyncedTagger = taggee;
-        NotificationManager.Instance.SendNotification(RpcTarget.All, tagger.NickName + " tagged " + taggee.NickName);
+        if(SyncedTagCooldownTimer == 0) {
+            SyncedTagCooldownTimer = tagCooldownTime;
+            NotificationManager.Instance.SendNotification(RpcTarget.All, tagger.NickName + " tagged " + taggee.NickName);
+            SyncedTagger = taggee;
+            // Debug.Log("cooldown" + SyncedTagCooldownTimer);
+        }
     }
 
     // void SetTagger(Player tagger) {
@@ -95,6 +120,10 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     [PunRPC] void RPC_SetTagger(Player tagger) {
         this.tagger = tagger;
+    }
+
+    [PunRPC] void RPC_SetTagCooldownTimer(float time) {
+        this.tagCooldownTimer = time;
     }
 
     Player ChooseRandomPlayer() {

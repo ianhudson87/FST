@@ -85,8 +85,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
             transform.rotation = (Quaternion) stream.ReceiveNext();
             rb.velocity = (Vector3) stream.ReceiveNext();
 
-            float lag = Mathf.Abs((float) (PhotonNetwork.Time - info.SentServerTime));
-            rb.position += rb.velocity * lag;
+            // float lag = Mathf.Abs((float) (PhotonNetwork.Time - info.SentServerTime));
+            // rb.position += rb.velocity * lag;
         }
     }
 
@@ -283,19 +283,20 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
 
     void Boost() {
         if(Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0")) {
-            rb.AddForce(model.transform.forward * 50);
+            rb.AddForce(model.transform.forward * 100);
             trail.emitting = true;
         }
         else {
             trail.emitting = false;
         }
     }
-    void OnTriggerEnter(Collider other) {
+
+    void OnTriggerStay(Collider other) {
         // Tag detection. See if you tagged someone else
         if(PV.IsMine) {
             // Debug.Log("triggered");
             if(other.gameObject.GetComponentInParent<PlayerController>()) {
-                Debug.Log("tagged player");
+                // Debug.Log("tagged player");
                 if(GameManager.Instance.SyncedTagger == PhotonNetwork.LocalPlayer) {
                     // I am the tagger and I have tagged another player
                     Player otherPlayer = other.gameObject.GetComponentInParent<PhotonView>().Owner;
