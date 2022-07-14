@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 
 public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObservable
 {
@@ -69,7 +70,6 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        Debug.Log("photon update");
         // sync position and rotation and do lag compensation
         if (stream.IsWriting)
         {
@@ -290,12 +290,19 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
             trail.emitting = false;
         }
     }
-
-    void OnCollisionEnter(Collision other) {
+    void OnTriggerEnter(Collider other) {
+        // Tag detection. See if you tagged someone else
         if(PV.IsMine) {
-            if(other.gameObject.GetComponent<PlayerController>()) {
-                Debug.Log(GameManager.Instance);
-                GameManager.Instance.RespawnPlayers();
+            // Debug.Log("triggered");
+            if(other.gameObject.GetComponentInParent<PlayerController>()) {
+                Debug.Log("tagged player");
+                if(GameManager.Instance.SyncedTagger == PhotonNetwork.LocalPlayer) {
+                    // I am the tagger and I have tagged another player
+                    Player otherPlayer = other.gameObject.GetComponentInParent<PhotonView>().Owner;
+                    GameManager.Instance.ApplyTag(tagger: PhotonNetwork.LocalPlayer, otherPlayer);
+                }
+                // Debug.Log(GameManager.Instance);
+                // GameManager.Instance.RespawnPlayers();
             }
         }
     }

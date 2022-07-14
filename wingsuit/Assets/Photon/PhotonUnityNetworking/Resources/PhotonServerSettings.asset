@@ -41,6 +41,7 @@ MonoBehaviour:
   - RespawnSpaceship
   - RPC_Respawn
   - RPC_SetTagger
+  - RPC_SendNotification
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

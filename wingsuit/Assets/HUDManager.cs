@@ -19,7 +19,7 @@ public class HUDManager : MonoBehaviour
 
         // player scores
         foreach(Player p in PhotonNetwork.PlayerList) {
-            GameObject.Instantiate(PlayerScoresListItemPrefab, PlayerScoresListContent).GetComponent<PlayerScoresListItem>().Initialize(p);
+            GameObject.Instantiate(PlayerScoresListItemPrefab, PlayerScoresListContent).GetComponent<PlayerScoresListItem>().Initialize(trackedPlayer: p);
         }
     }
     public void CreateNotification(string notifText) {
