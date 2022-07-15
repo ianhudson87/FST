@@ -5,9 +5,26 @@ using Photon.Pun;
 using Photon.Realtime;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
+public enum GameStates {
+    Setup,
+    FreezeTime,
+    Tag,
+}
+
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance; // singleton
+    GameStates prevGameState;
+    GameStates gameState = GameStates.Setup;
+    public GameStates SyncedGameState {
+        set {
+            gameState = value;
+            PV.RPC("RPC_SetGameState", RpcTarget.Others, new object[] {gameState});
+        }
+        get {
+            return gameState;
+        }
+    }
     Player tagger; // don't use this variable, ever!!!!
     public Player SyncedTagger {
         // This value is synced across all clients. Anyone can change it.
@@ -19,9 +36,11 @@ public class GameManager : MonoBehaviourPunCallbacks
             return tagger;
         }
     }
+    Player winner;
     [SerializeField] PhotonView PV;
     [SerializeField] float startingScore;
     [SerializeField] float tagCooldownTime;
+    [SerializeField] float freezeTime;
 
     float tagCooldownTimer = 0f;
     public float SyncedTagCooldownTimer {
@@ -40,10 +59,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         Instance = this;
 
         if(PhotonNetwork.IsMasterClient) {
-            foreach(Player p in PhotonNetwork.PlayerList) {
-                playerScores.Add(p, startingScore);
-            }
-            SyncPlayerScores();
+            ResetScores();
         }
     }
 
@@ -59,27 +75,64 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     void Start() {
         // choose a tagger and sync it across all players
-        if(PhotonNetwork.IsMasterClient) {
-            SyncedTagger = ChooseRandomPlayer();
-            NotificationManager.Instance.SendNotification(RpcTarget.All, SyncedTagger.NickName + " is the tagger!");
-        }
+        // if(PhotonNetwork.IsMasterClient) {
+        //     // SyncedTagger = ChooseRandomPlayer();
+        //     NotificationManager.Instance.SendNotification(RpcTarget.All, SyncedTagger.NickName + " is the tagger!");
+        // }
     }
 
     void Update() {
-        // Debug.Log(PhotonNetwork.PlayerList.Length);
-        if(PhotonNetwork.IsMasterClient) {
-            UpdatePlayerScores();
-            SyncPlayerScores();
-            UpdateTagCooldownTimer();
+        // Debug.Log(SyncedGameState);
+        switch(SyncedGameState) {
+            case GameStates.Setup: {
+                break;
+            }
+
+            case GameStates.FreezeTime: {
+                if(PhotonNetwork.IsMasterClient) {
+                    if(prevGameState != GameStates.FreezeTime) {
+                        // transitioned to FreezeTime
+                        NotificationManager.Instance.SendNotification(RpcTarget.All, "Game will start in " + freezeTime + " seconds");
+                        ResetScores();
+                        SetAllPlayersFrozen(true);
+                        SyncedTagger = ChooseRandomPlayer();
+                        NotificationManager.Instance.SendNotification(RpcTarget.All, "The tagger is " + SyncedTagger.NickName + "!");
+                        StartCoroutine(DoFreezeTime());
+                    }
+                }
+                break;
+            }
+
+            case GameStates.Tag: {
+                if(PhotonNetwork.IsMasterClient) {
+                    if(prevGameState != GameStates.Tag) {
+                        // transitioned to the game portion
+                        SetAllPlayersFrozen(false);
+                        NotificationManager.Instance.SendNotification(RpcTarget.All, "GO!");
+                    }
+                    UpdatePlayerScores();
+                    SyncPlayerScores();
+                    UpdateTagCooldownTimer();
+                    CheckWinCondition();
+                }
+                break;
+            }
         }
+        // Debug.Log(PhotonNetwork.PlayerList.Length);
+        
         // foreach(Player p in PhotonNetwork.PlayerList) {
         //     Debug.Log("player " + p + ", time: " + p.CustomProperties["timeToWin"]);
         // }
-        
+        prevGameState = SyncedGameState;
+    }
+
+    IEnumerator DoFreezeTime() {
+        yield return new WaitForSeconds(freezeTime);
+        SyncedGameState = GameStates.Tag;
     }
 
     void UpdateTagCooldownTimer() {
-        Debug.Log("cooldown timer: " + SyncedTagCooldownTimer);
+        // Debug.Log("cooldown timer: " + SyncedTagCooldownTimer);
         if(SyncedTagCooldownTimer > 0) {
             SyncedTagCooldownTimer = Mathf.Max(0, SyncedTagCooldownTimer - Time.deltaTime);
         }
@@ -136,6 +189,39 @@ public class GameManager : MonoBehaviourPunCallbacks
         PlayerController[] playerControllers = FindObjectsOfType<PlayerController>();
         foreach(PlayerController pc in playerControllers) {
             pc.Respawn();
+        }
+    }
+
+    public void OnStartGameButtonPress() {
+        Debug.Log("button pressed");
+        if(SyncedGameState == GameStates.Setup) {
+            Debug.Log("change game state");
+            SyncedGameState = GameStates.FreezeTime;
+        }
+    }
+
+    void ResetScores() {
+        playerScores.Clear();
+        foreach(Player p in PhotonNetwork.PlayerList) {
+            playerScores.Add(p, startingScore);
+        }
+        SyncPlayerScores();
+    }
+
+    void SetAllPlayersFrozen(bool isFrozen) {
+        PlayerController[] playerControllers = FindObjectsOfType<PlayerController>();
+        foreach(PlayerController pc in playerControllers) {
+            pc.SetFrozen(isFrozen);
+        }
+    }
+
+    void CheckWinCondition() {
+        foreach(Player p in PhotonNetwork.PlayerList) {
+            if(playerScores[p] <= 0) {
+                winner = p;
+                NotificationManager.Instance.SendNotification(RpcTarget.All, p.NickName + " has won!");
+                SyncedGameState = GameStates.Setup;
+            }
         }
     }
 

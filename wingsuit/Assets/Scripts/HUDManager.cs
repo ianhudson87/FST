@@ -12,6 +12,7 @@ public class HUDManager : MonoBehaviour
     [SerializeField] GameObject NotificationListItemPrefab;
     [SerializeField] Transform PlayerScoresListContent;
     [SerializeField] GameObject PlayerScoresListItemPrefab;
+    [SerializeField] GameObject StartGameMenu;
 
     void Awake() {
         Debug.Log("instance set");
@@ -25,5 +26,9 @@ public class HUDManager : MonoBehaviour
     public void CreateNotification(string notifText) {
         GameObject notif = GameObject.Instantiate(NotificationListItemPrefab, NotificationListContent);
         notif.GetComponent<NotificationListItem>().SetText(notifText);
+    }
+
+    public void DisplayStartGameMenu(bool shown) {
+
     }
 }

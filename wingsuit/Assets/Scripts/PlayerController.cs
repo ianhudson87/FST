@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     Vector3 gravityVector;
     float rollAngle = 0;
     Vector3 gliderNormalForce;
-    
+    bool isFrozen = false;
 
     // private Vector3 globalVelocity = new Vector3();
 
@@ -63,9 +63,16 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         MouseLook();
         ControllerLook();
         RollSine();
-        Glide();
-        Gravity();
-        Boost();
+
+        if(!isFrozen) {
+            rb.isKinematic = false;
+            Glide();
+            Gravity();
+            Boost();
+        }
+        else {
+            rb.isKinematic = true;
+        }
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -284,10 +291,10 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     void Boost() {
         if(Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0")) {
             rb.AddForce(model.transform.forward * 100);
-            trail.emitting = true;
+            // trail.emitting = true;
         }
         else {
-            trail.emitting = false;
+            // trail.emitting = false;
         }
     }
 
@@ -327,5 +334,12 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         transform.position = destination;
         rb.isKinematic = false; // probably doesnt do anything
         rb.velocity = vel; // probably doesnt do anything
+    }
+
+    public void SetFrozen(bool isFrozen) {
+        PV.RPC("RPC_SetFrozen", RpcTarget.All, new object[] {isFrozen});
+    }
+    [PunRPC] void RPC_SetFrozen(bool isFrozen) {
+        this.isFrozen = isFrozen;
     }
 }
