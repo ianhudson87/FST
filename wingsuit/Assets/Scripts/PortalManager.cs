@@ -24,7 +24,7 @@ public class PortalManager : MonoBehaviour
     void Update() {
         if(localPlayer == null) {
             PlayerController[] playerControllers = GameObject.FindObjectsOfType<PlayerController>();
-            Debug.Log("Player Controolller" + playerControllers);
+            // Debug.Log("Player Controolller" + playerControllers);
             foreach (PlayerController pc in playerControllers) {
                 if(pc.PV.IsMine) {
                     localPlayer = pc;
