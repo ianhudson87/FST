@@ -25,13 +25,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1256068311625128001}
-  m_LocalRotation: {x: -0, y: 0.8742432, z: -0, w: -0.48548833}
-  m_LocalPosition: {x: 79.7, y: 33.3, z: -138.4}
+  m_LocalRotation: {x: -0, y: 0.6582917, z: -0, w: 0.7527629}
+  m_LocalPosition: {x: -14.08, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1401158596655416159}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 238.08899, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 82.339, z: 0}
 --- !u!20 &1568032154261147206
 Camera:
   m_ObjectHideFlags: 0
@@ -65,7 +65,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 207d4cb10435a3e4ab47425a4677b4d8, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
@@ -110,9 +110,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1401158595120463530}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 231.7, y: 53, z: -108.4}
-  m_LocalScale: {x: 10, y: 100, z: 100}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10, y: 0, z: 0}
+  m_LocalScale: {x: 0.1, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 1401158596655416159}
   m_RootOrder: 1
@@ -218,9 +218,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1401158595346341230}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 28, y: 52, z: -107}
-  m_LocalScale: {x: 10, y: 100, z: 100}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -10, y: 0, z: 0}
+  m_LocalScale: {x: 0.1, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 1401158596655416159}
   m_RootOrder: 0
@@ -310,7 +310,7 @@ GameObject:
   - component: {fileID: 1401158596655416159}
   - component: {fileID: 1401158596655416152}
   m_Layer: 0
-  m_Name: PortalPF
+  m_Name: Portal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -324,7 +324,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1401158596655416153}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 38.059563, y: 141.6956, z: 180.72089}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1401158595346341201}
@@ -350,6 +350,8 @@ MonoBehaviour:
   p2: {fileID: 1401158595120463529}
   c1: {fileID: 1568032154261147206}
   c2: {fileID: 3896092580695812492}
+  p1Material: {fileID: 2100000, guid: 64148597fb331cf4091d7e1ad10b6fbb, type: 2}
+  p2Material: {fileID: 2100000, guid: d7bed87f6f6b1bf46aad49003bb0a518, type: 2}
 --- !u!1 &7692208036290101070
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,13 +377,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7692208036290101070}
-  m_LocalRotation: {x: -0, y: -0.90468466, z: -0, w: -0.4260818}
-  m_LocalPosition: {x: 65.38, y: -2.369995, z: -6.3600006}
+  m_LocalRotation: {x: -0, y: -0.6861216, z: -0, w: 0.727487}
+  m_LocalPosition: {x: 14.19, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1401158596655416159}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: -230.438, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -86.648, z: 0}
 --- !u!20 &3896092580695812492
 Camera:
   m_ObjectHideFlags: 0
@@ -415,7 +417,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 667ecb7069d40234ebab0cd643830b63, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1

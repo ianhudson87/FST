@@ -22,6 +22,12 @@ public class testmove : MonoBehaviour
         if (Input.GetAxisRaw("Horizontal") < 0 ) {
             transform.position += -Vector3.right * Time.deltaTime * 5;
         }
+        if (Input.GetKey(KeyCode.Space) ) {
+            transform.position += Vector3.up * Time.deltaTime * 5;
+        }
+        if (Input.GetKey(KeyCode.LeftControl) ) {
+            transform.position += Vector3.up * Time.deltaTime * 5;
+        }
 
     }
 }
