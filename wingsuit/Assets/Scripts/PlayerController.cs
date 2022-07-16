@@ -92,8 +92,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
             transform.rotation = (Quaternion) stream.ReceiveNext();
             rb.velocity = (Vector3) stream.ReceiveNext();
 
-            // float lag = Mathf.Abs((float) (PhotonNetwork.Time - info.SentServerTime));
-            // rb.position += rb.velocity * lag;
+            float lag = Mathf.Abs((float) (PhotonNetwork.Time - info.SentServerTime));
+            rb.position += rb.velocity * lag;
         }
     }
 
