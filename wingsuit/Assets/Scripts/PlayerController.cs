@@ -336,10 +336,24 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         rb.velocity = vel; // probably doesnt do anything
     }
 
+    public void MoveTo(Transform moveToTransform) {
+        PV.RPC("RPC_MoveTo", RpcTarget.All, new object[] {moveToTransform.position, moveToTransform.rotation});
+    }
+
+    [PunRPC] void RPC_MoveTo(Vector3 moveToPosition, Quaternion moveToRotation) {
+        if(PV.IsMine) {
+            // rb.isKinematic = true;
+            this.transform.position = moveToPosition;
+            this.transform.rotation = moveToRotation;
+        }
+    }
+
     public void SetFrozen(bool isFrozen) {
         PV.RPC("RPC_SetFrozen", RpcTarget.All, new object[] {isFrozen});
     }
     [PunRPC] void RPC_SetFrozen(bool isFrozen) {
-        this.isFrozen = isFrozen;
+        if(PV.IsMine) {
+            this.isFrozen = isFrozen;
+        }
     }
 }

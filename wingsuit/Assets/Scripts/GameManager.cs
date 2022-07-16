@@ -41,6 +41,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] float startingScore;
     [SerializeField] float tagCooldownTime;
     [SerializeField] float freezeTime;
+    [SerializeField] float runnerSpawnRadius;
 
     float tagCooldownTimer = 0f;
     public float SyncedTagCooldownTimer {
@@ -97,6 +98,7 @@ public class GameManager : MonoBehaviourPunCallbacks
                         SetAllPlayersFrozen(true);
                         SyncedTagger = ChooseRandomPlayer();
                         NotificationManager.Instance.SendNotification(RpcTarget.All, "The tagger is " + SyncedTagger.NickName + "!");
+                        MovePlayersToStartPosition();
                         StartCoroutine(DoFreezeTime());
                     }
                 }
@@ -179,6 +181,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         this.tagCooldownTimer = time;
     }
 
+    [PunRPC] void RPC_SetGameState(GameStates gameState) {
+        this.gameState = gameState;
+    }
+
     Player ChooseRandomPlayer() {
         int numPlayers = PhotonNetwork.PlayerList.Length;
         return PhotonNetwork.PlayerList[Random.Range(0, numPlayers)];
@@ -212,6 +218,19 @@ public class GameManager : MonoBehaviourPunCallbacks
         PlayerController[] playerControllers = FindObjectsOfType<PlayerController>();
         foreach(PlayerController pc in playerControllers) {
             pc.SetFrozen(isFrozen);
+        }
+    }
+
+    void MovePlayersToStartPosition() {
+        foreach(PlayerController pc in FindObjectsOfType<PlayerController>()) {
+            if(pc.PV.Owner == SyncedTagger) {
+                Debug.Log("move to tag position");
+                pc.MoveTo(SpawnManager.Instance.GetTaggerSpawn());
+            }
+            else {
+                Debug.Log("move to runner position");
+                pc.MoveTo(SpawnManager.Instance.GetRunnerSpawn(runnerSpawnRadius));
+            }
         }
     }
 
