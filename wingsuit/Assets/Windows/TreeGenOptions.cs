@@ -10,6 +10,8 @@ public class TreeGenOptions : EditorWindow
     public float radiusMultiplier; // everytime we go up a block, how much to reduce the radius
     public int numSides;
     public float levelHeight;
+    public float firstBranchHeight;
+    public float branchFrequency; // average number of branches
     // string myString = "Hello World";
     // bool groupEnabled;
     // bool myBool = true;
