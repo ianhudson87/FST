@@ -46,6 +46,7 @@ MonoBehaviour:
   - RPC_SetFrozen
   - RPC_SetGameState
   - RPC_MoveTo
+  - RPC_SetBoostPercentage
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

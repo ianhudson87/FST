@@ -12,6 +12,12 @@ public class PlayerAudioManager : MonoBehaviour
     void Update() {
         FlyingAudio();
         TurbulanceAudio();
+        SetMasterVolume();
+    }
+
+    void SetMasterVolume() {
+        // Debug.Log(SettingsManager.Instance.masterVolume);
+        AudioListener.volume = SettingsManager.Instance.masterVolume;
     }
 
     void FlyingAudio() {

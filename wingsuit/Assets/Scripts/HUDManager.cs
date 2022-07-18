@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
+using UnityEngine.UI;
 
 public class HUDManager : MonoBehaviour
 {
@@ -13,6 +14,22 @@ public class HUDManager : MonoBehaviour
     [SerializeField] Transform PlayerScoresListContent;
     [SerializeField] GameObject PlayerScoresListItemPrefab;
     [SerializeField] GameObject StartGameMenu;
+    PlayerController localPlayerController;
+    [SerializeField] Image boostBar;
+
+    void Update() {
+        if(localPlayerController == null) {
+            // PlayerController[] playerControllers = 
+            foreach(PlayerController pc in FindObjectsOfType<PlayerController>()) {
+                if(pc.PV.IsMine) {
+                    localPlayerController = pc;
+                    break;
+                }
+            }
+        }
+
+        BoostBar();
+    }
 
     void Awake() {
         Debug.Log("instance set");
@@ -28,7 +45,11 @@ public class HUDManager : MonoBehaviour
         notif.GetComponent<NotificationListItem>().SetText(notifText);
     }
 
-    public void DisplayStartGameMenu(bool shown) {
-
+    void BoostBar() {
+        boostBar.fillAmount = localPlayerController.boostRemaining / localPlayerController.maxBoostAmount;
     }
+
+    // public void DisplayStartGameMenu(bool shown) {
+
+    // }
 }

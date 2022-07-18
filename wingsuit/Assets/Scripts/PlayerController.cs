@@ -7,8 +7,8 @@ using Photon.Realtime;
 public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObservable
 {
     [SerializeField] GameObject cameraHolder;
-    [SerializeField] float controllerSensitivity;
-    [SerializeField] float sensitivity;
+    // [SerializeField] float controllerSensitivity;
+    // [SerializeField] float sensitivity;
     [SerializeField] float gravity;
     [SerializeField] GameObject model;
     [SerializeField] float maxRollAngle, rollStrength, rollSmoothness;
@@ -29,8 +29,12 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
 
     [SerializeField] private float airFrictionCoefficient;
     [SerializeField] private float airFrictionExponent;
+    [SerializeField] public float maxBoostAmount;
+    [HideInInspector] public float boostRemaining;
+    [SerializeField] float boostRegenRate;
 
     void Awake() {
+        boostRemaining = maxBoostAmount;
         PV = GetComponent<PhotonView>();
         rb = GetComponent<Rigidbody>();
         playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
@@ -114,12 +118,12 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         rb.AddForce(gravityVector);
     }
 
-    void Look() {
-        transform.Rotate(-Vector3.forward * Input.GetAxisRaw("Horizontal") * Time.deltaTime * controllerSensitivity);
+    // void Look() {
+    //     transform.Rotate(-Vector3.forward * Input.GetAxisRaw("Horizontal") * Time.deltaTime * controllerSensitivity);
 
-        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * Time.deltaTime * controllerSensitivity);
-        // transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * Time.deltaTime * keyboardSensitivity / 1.5f);
-    }
+    //     transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * Time.deltaTime * controllerSensitivity);
+    //     // transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * Time.deltaTime * keyboardSensitivity / 1.5f);
+    // }
 
     // void MouseLookClickToRoll() {
     //     // Yaw *not really because world space
@@ -168,22 +172,22 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     // }
     void MouseLook() {
         // Yaw *not really because world space
-        transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * sensitivity, Space.World);
+        transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * SettingsManager.Instance.mouseSensitivity, Space.World);
         // transform.Rotate(Vector3.up,)
         // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
         
         // Pitch *not really because world space
-        transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * sensitivity);
+        transform.Rotate(Vector3.left * Input.GetAxisRaw("Mouse Y") * SettingsManager.Instance.mouseSensitivity);
     }
 
     void ControllerLook() {
         // Yaw *not really because world space
-        transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * controllerSensitivity, Space.World);
+        transform.Rotate(Vector3.up * Input.GetAxisRaw("Horizontal") * SettingsManager.Instance.controllerSensitivity, Space.World);
         // transform.Rotate(Vector3.up,)
         // transform.RotateAround(transform.InverseTransformVector(Vector3.up), Input.GetAxisRaw("Mouse X") * sensitivity);
         
         // Pitch *not really because world space
-        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * controllerSensitivity);
+        transform.Rotate(Vector3.right * Input.GetAxisRaw("Vertical") * SettingsManager.Instance.controllerSensitivity);
     }
 
 
@@ -289,11 +293,13 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     }
 
     void Boost() {
-        if(Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0")) {
+        if(boostRemaining > 0 && (Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0"))) {
             rb.AddForce(model.transform.forward * 100);
+            boostRemaining -= Time.deltaTime;
             // trail.emitting = true;
         }
         else {
+            boostRemaining += Time.deltaTime * boostRegenRate;
             // trail.emitting = false;
         }
     }
@@ -354,6 +360,16 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     [PunRPC] void RPC_SetFrozen(bool isFrozen) {
         if(PV.IsMine) {
             this.isFrozen = isFrozen;
+        }
+    }
+
+    public void SetBoostPercentage(float boostPercentage) {
+        PV.RPC("RPC_SetBoostPercentage", RpcTarget.All, new object[] {boostPercentage});
+    }
+
+    [PunRPC] void RPC_SetBoostPercentage(float boostPercentage) {
+        if(PV.IsMine) {
+            boostRemaining = boostPercentage * maxBoostAmount;
         }
     }
 }

@@ -791,8 +791,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraHolder: {fileID: 6545239161158861691}
-  controllerSensitivity: 1.25
-  sensitivity: 3
   gravity: 100
   model: {fileID: 6545239160669193878}
   maxRollAngle: 89
@@ -801,6 +799,9 @@ MonoBehaviour:
   PV: {fileID: -4390716306161293670}
   airFrictionCoefficient: 25
   airFrictionExponent: 1
+  maxBoostAmount: 3
+  boostRemaining: 0
+  boostRegenRate: 0.3
 --- !u!114 &-4390716306161293670
 MonoBehaviour:
   m_ObjectHideFlags: 0

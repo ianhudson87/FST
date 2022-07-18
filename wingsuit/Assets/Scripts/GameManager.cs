@@ -61,6 +61,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         if(PhotonNetwork.IsMasterClient) {
             ResetScores();
+            
         }
     }
 
@@ -75,6 +76,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     void Start() {
+        if(PhotonNetwork.IsMasterClient) {
+            NotificationManager.Instance.SendNotification(RpcTarget.MasterClient, "Press [enter] to start game");
+        }
         // choose a tagger and sync it across all players
         // if(PhotonNetwork.IsMasterClient) {
         //     // SyncedTagger = ChooseRandomPlayer();
@@ -83,9 +87,23 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     void Update() {
+        GameStates startingGameState = SyncedGameState;
+        // if(prevGameState != SyncedGameState)
+        // Debug.Log("prev game state" + prevGameState + "current game state" + SyncedGameState);
         // Debug.Log(SyncedGameState);
         switch(SyncedGameState) {
             case GameStates.Setup: {
+                if(PhotonNetwork.IsMasterClient) {
+                    // Debug.Log("is master client");
+                    // if(prevGameState != GameStates.Setup) {
+                    //     Debug.Log("got to setup");
+                    //     NotificationManager.Instance.SendNotification(RpcTarget.MasterClient, "Press [enter] to start game");
+                    // }
+                    if(Input.GetKeyDown(KeyCode.Return)) {
+                        OnStartGameButtonPress();
+                    }
+                }
+                
                 break;
             }
 
@@ -125,7 +143,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         // foreach(Player p in PhotonNetwork.PlayerList) {
         //     Debug.Log("player " + p + ", time: " + p.CustomProperties["timeToWin"]);
         // }
-        prevGameState = SyncedGameState;
+        prevGameState = startingGameState;
     }
 
     IEnumerator DoFreezeTime() {
@@ -145,7 +163,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         foreach(Player p in PhotonNetwork.PlayerList) {
             // Debug.Log("change score for" + p + " id: " + p.ActorNumber);
             // Debug.Log("current keys" + playersTimeToWin.Keys);
-            if(p == tagger) {
+            if(p != tagger) {
                 playerScores[p] -= Time.deltaTime;
             }
         }
