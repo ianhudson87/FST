@@ -33,6 +33,21 @@ public class RoomManager : MonoBehaviourPunCallbacks
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    public void LeaveRoom() {
+        if(PhotonNetwork.CurrentRoom != null) {
+            PhotonNetwork.LeaveRoom();
+        }
+    }
+
+    public override void OnLeftRoom()
+    {
+        // base.OnLeftRoom();
+        // PhotonNetwork.LoadLevel(0);
+        if(SceneManager.GetActiveScene().name != "Launcher") {
+            SceneManager.LoadScene("Launcher");
+        }
+    }
+
     void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode){
         if(scene.buildIndex == 1){
             // we are in the game scene

@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     // [SerializeField] float controllerSensitivity;
     // [SerializeField] float sensitivity;
     [SerializeField] float gravity;
-    [SerializeField] GameObject model;
+    [SerializeField] GameObject rollable;
     [SerializeField] float maxRollAngle, rollStrength, rollSmoothness;
     
     TrailRenderer trail;
@@ -193,7 +193,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
 
 
     void RollSine() {
-        // Roll. Only roll the model
+        // Roll. Only roll the stuff under the rollable gameobject
         // get difference between desired and actual horizontal angle (angle along the xz-plane). Roll depending on that
         float desiredXZAngle = Mathf.Atan(transform.forward.z/(transform.forward.x + 1e-9f)) + ((transform.forward.x < 0) ? Mathf.PI : 0);
         float actualXZAngle = Mathf.Atan(rb.velocity.z/(rb.velocity.x + 1e-9f)) + ((rb.velocity.x < 0) ? Mathf.PI : 0);
@@ -214,9 +214,9 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
             rollAngle = rollAngle * Mathf.Pow(0.1f, Time.deltaTime);
         }
         
-        Vector3 newLocalEulerAngles = model.transform.localEulerAngles;
+        Vector3 newLocalEulerAngles = rollable.transform.localEulerAngles;
         newLocalEulerAngles.z = rollAngle;
-        model.transform.localEulerAngles = newLocalEulerAngles;
+        rollable.transform.localEulerAngles = newLocalEulerAngles;
     }
 
     void Roll() {
@@ -236,7 +236,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
 
         if (((deltaXZAngle > 2  && deltaXZAngle < 180 - 2) || (deltaXZAngle > 180 + 2  && deltaXZAngle < 360 - 2))  && rb.velocity.magnitude > 10) {
             // roll to make the turn, but only if we are far away from the desired angle and we have enough speed
-            if(model.transform.localEulerAngles.z > maxRollAngle && model.transform.localEulerAngles.z < (360 - maxRollAngle))
+            if(rollable.transform.localEulerAngles.z > maxRollAngle && rollable.transform.localEulerAngles.z < (360 - maxRollAngle))
                 Debug.Log("bad angle");
             // if(model.transform.localEulerAngles.z < maxRollAngle || model.transform.localEulerAngles.z > (360 - maxRollAngle)) {
                 // if we haven't already rotated maxRollAngle degrees to make the turn
@@ -265,20 +265,20 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         else {
             // rotate back
             if (rollAngle > 0) {
-                rollAngle -= model.transform.localEulerAngles.z * Time.deltaTime * 1;
+                rollAngle -= rollable.transform.localEulerAngles.z * Time.deltaTime * 1;
                 // model.transform.Rotate(-Vector3.forward * model.transform.localEulerAngles.z * Time.deltaTime * 2);
             }
             else {
-                rollAngle += (360 - model.transform.localEulerAngles.z) * Time.deltaTime * 1;
+                rollAngle += (360 - rollable.transform.localEulerAngles.z) * Time.deltaTime * 1;
                 // model.transform.Rotate(Vector3.forward * (360 - model.transform.localEulerAngles.z) * Time.deltaTime * 2);
             }
         }
         
         // Debug.Log(rollAngle);
 
-        Vector3 newLocalEulerAngles = model.transform.localEulerAngles;
+        Vector3 newLocalEulerAngles = rollable.transform.localEulerAngles;
         newLocalEulerAngles.z = rollAngle;
-        model.transform.localEulerAngles = newLocalEulerAngles;
+        rollable.transform.localEulerAngles = newLocalEulerAngles;
     }
 
     void Glide() {
@@ -286,20 +286,20 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
             Debug.Log("here");
             return;
         }
-        // get the component of velocity in the direction perpendicular to the glider (which is based on the orientation of the model)
-        gliderNormalForce = model.transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-model.transform.up, rb.velocity));
+        // get the component of velocity in the direction perpendicular to the glider (which is based on the orientation of the "rollable" game object)
+        gliderNormalForce = rollable.transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-rollable.transform.up, rb.velocity));
 
         // Debug.Log(gliderNormalForce + " : " + rb.velocity);
 
     
-        Debug.DrawLine(model.transform.position, model.transform.position + gliderNormalForce, Color.blue, 0.1f);
+        Debug.DrawLine(rollable.transform.position, rollable.transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
         // rb.velocity += gliderNormalForce * Time.deltaTime;
     }
 
     void Boost() {
         if(boostRemaining > 0 && (Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0"))) {
-            rb.AddForce(model.transform.forward * 100);
+            rb.AddForce(rollable.transform.forward * 100);
             boostRemaining -= Time.deltaTime;
             // trail.emitting = true;
         }

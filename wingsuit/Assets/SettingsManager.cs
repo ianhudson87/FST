@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Photon.Pun;
+using UnityEngine.SceneManagement;
 
-public class SettingsManager : MonoBehaviour
+public class SettingsManager : MonoBehaviourPunCallbacks
 {
     public static SettingsManager Instance;
     [SerializeField] GameObject settingsCanvas;
@@ -16,8 +18,14 @@ public class SettingsManager : MonoBehaviour
     [HideInInspector] public float controllerSensitivity;
     [SerializeField] Slider volumeSlider;
     [HideInInspector] public float masterVolume;
+    [SerializeField] Button LeaveRoomButton;
 
     void Awake() {
+        if(Instance != null) {
+            Destroy(this.gameObject);
+            return;
+        }
+
         Instance = this;
 
         DontDestroyOnLoad(this.gameObject);
@@ -49,5 +57,18 @@ public class SettingsManager : MonoBehaviour
 
     public void OnVolumeSliderChange() {
         masterVolume = volumeSlider.value;
+    }
+
+    public override void OnJoinedRoom()
+    {
+        // Debug.Log("enable button");
+        base.OnJoinedRoom();
+        LeaveRoomButton.gameObject.SetActive(true);
+    }
+
+    public override void OnLeftRoom()
+    {
+        base.OnLeftRoom();
+        LeaveRoomButton.gameObject.SetActive(false);
     }
 }
