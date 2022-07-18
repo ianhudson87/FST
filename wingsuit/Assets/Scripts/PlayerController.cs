@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         PV = GetComponent<PhotonView>();
         rb = GetComponent<Rigidbody>();
         playerManager = PhotonView.Find((int)PV.InstantiationData[0]).GetComponent<PlayerManager>();
-        trail = GetComponent<TrailRenderer>();
+        // trail = GetComponent<TrailRenderer>();
         gravityVector = new Vector3(0, -gravity, 0);
     }
 
@@ -49,7 +49,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         }
         else {
             // disable your own trail for yourself
-            GetComponent<TrailRenderer>().enabled = false;
+            // GetComponent<TrailRenderer>().enabled = false;
         }
     }
 
@@ -282,11 +282,16 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     }
 
     void Glide() {
+        if(Input.GetKey(KeyCode.LeftShift)) {
+            Debug.Log("here");
+            return;
+        }
         // get the component of velocity in the direction perpendicular to the glider (which is based on the orientation of the model)
         gliderNormalForce = model.transform.up * Mathf.Pow(Mathf.Abs(Vector3.Dot(transform.up, rb.velocity)), airFrictionExponent) * airFrictionCoefficient * Mathf.Sign(Vector3.Dot(-model.transform.up, rb.velocity));
 
         // Debug.Log(gliderNormalForce + " : " + rb.velocity);
 
+    
         Debug.DrawLine(model.transform.position, model.transform.position + gliderNormalForce, Color.blue, 0.1f);
         rb.AddForce(gliderNormalForce);
         // rb.velocity += gliderNormalForce * Time.deltaTime;
@@ -299,7 +304,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
             // trail.emitting = true;
         }
         else {
-            boostRemaining += Time.deltaTime * boostRegenRate;
+            boostRemaining = Mathf.Min(boostRemaining + Time.deltaTime * boostRegenRate, maxBoostAmount);
             // trail.emitting = false;
         }
     }

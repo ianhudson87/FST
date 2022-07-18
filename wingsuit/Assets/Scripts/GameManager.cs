@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     Player winner;
     [SerializeField] PhotonView PV;
     [SerializeField] float startingScore;
-    [SerializeField] float tagCooldownTime;
+    [SerializeField] float tagCooldownTime; // after tag happens. how long to wait until next tag can happen
     [SerializeField] float freezeTime;
     [SerializeField] float runnerSpawnRadius;
 
@@ -114,6 +114,7 @@ public class GameManager : MonoBehaviourPunCallbacks
                         NotificationManager.Instance.SendNotification(RpcTarget.All, "Game will start in " + freezeTime + " seconds");
                         ResetScores();
                         SetAllPlayersFrozen(true);
+                        SetAllPlayersBoost(1f);
                         SyncedTagger = ChooseRandomPlayer();
                         NotificationManager.Instance.SendNotification(RpcTarget.All, "The tagger is " + SyncedTagger.NickName + "!");
                         MovePlayersToStartPosition();
@@ -179,7 +180,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     public void ApplyTag(Player tagger, Player taggee) {
-        if(SyncedTagCooldownTimer == 0) {
+        if(SyncedTagCooldownTimer == 0 && SyncedGameState == GameStates.Tag) {
             SyncedTagCooldownTimer = tagCooldownTime;
             NotificationManager.Instance.SendNotification(RpcTarget.All, tagger.NickName + " tagged " + taggee.NickName);
             SyncedTagger = taggee;
@@ -259,6 +260,12 @@ public class GameManager : MonoBehaviourPunCallbacks
                 NotificationManager.Instance.SendNotification(RpcTarget.All, p.NickName + " has won!");
                 SyncedGameState = GameStates.Setup;
             }
+        }
+    }
+
+    void SetAllPlayersBoost(float boostPercentage) {
+        foreach(PlayerController pc in FindObjectsOfType<PlayerController>()) {
+            pc.SetBoostPercentage(boostPercentage);
         }
     }
 
