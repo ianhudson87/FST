@@ -8920,7 +8920,7 @@ MonoBehaviour:
   controllerSensitivity: 0
   volumeSlider: {fileID: 1109171049}
   masterVolume: 0
-  LeaveRoomButton: {fileID: 0}
+  LeaveRoomButton: {fileID: 95167680}
 --- !u!4 &2111201260
 Transform:
   m_ObjectHideFlags: 0
