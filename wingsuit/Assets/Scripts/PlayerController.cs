@@ -33,6 +33,15 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
     [HideInInspector] public float boostRemaining;
     [SerializeField] float boostRegenRate;
 
+    // Elytra Parameters
+    [SerializeField] float elyGravity;
+    [SerializeField] float normalForce;
+    [SerializeField] float vertToHorz;
+    [SerializeField] float horizToVert;
+    [SerializeField] float horizToHoriz;
+    [SerializeField] float vertDecay;
+    [SerializeField] float horizDecay;
+
     void Awake() {
         boostRemaining = maxBoostAmount;
         PV = GetComponent<PhotonView>();
@@ -67,11 +76,18 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         MouseLook();
         ControllerLook();
         RollSine();
+    }
+
+    void FixedUpdate() {
+        if(!PV.IsMine) {
+            return;
+        }
 
         if(!isFrozen) {
             rb.isKinematic = false;
-            Glide();
-            Gravity();
+            // Glide();
+            // Gravity();
+            GlideElytraWithParameters();
             Boost();
         }
         else {
@@ -85,16 +101,18 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         if (stream.IsWriting)
         {
             // Debug.Log("writing" + PV.Owner.NickName + " " + rb.position + " " + transform.rotation);
-            stream.SendNext(rb.position);
-            stream.SendNext(transform.rotation);
+            // stream.SendNext(rb.position);
+            stream.SendNext(transform.rotation.eulerAngles);
             stream.SendNext(rb.velocity);
+            stream.SendNext(rollable.transform.eulerAngles);
         }
         else
         {
             // Debug.Log("reading" + PV.Owner.NickName);
-            rb.position = (Vector3) stream.ReceiveNext();
-            transform.rotation = (Quaternion) stream.ReceiveNext();
+            // rb.position = (Vector3) stream.ReceiveNext();
+            transform.eulerAngles = Vector3.Lerp(transform.eulerAngles, (Vector3) stream.ReceiveNext(), 0.1f);
             rb.velocity = (Vector3) stream.ReceiveNext();
+            rollable.transform.eulerAngles = (Vector3) stream.ReceiveNext();
 
             float lag = Mathf.Abs((float) (PhotonNetwork.Time - info.SentServerTime));
             rb.position += rb.velocity * lag;
@@ -283,7 +301,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
 
     void Glide() {
         if(Input.GetKey(KeyCode.LeftShift)) {
-            Debug.Log("here");
+            // Debug.Log("here");
             return;
         }
         // get the component of velocity in the direction perpendicular to the glider (which is based on the orientation of the "rollable" game object)
@@ -296,6 +314,233 @@ public class PlayerController : MonoBehaviourPunCallbacks, Teleportable, IPunObs
         rb.AddForce(gliderNormalForce);
         // rb.velocity += gliderNormalForce * Time.deltaTime;
     }
+
+    void GlideElytraWorking() {
+        // defining values
+        Vector3 moveVecPerFrame = rb.velocity * Time.fixedDeltaTime;
+
+        float pitch = transform.eulerAngles.x / 180f * Mathf.PI;
+        float yaw = -transform.eulerAngles.y / 180f * Mathf.PI;
+
+        float yawcos = Mathf.Cos(yaw - Mathf.PI);
+        float yawsin = Mathf.Sin(yaw);
+        float pitchcos = Mathf.Cos(pitch);
+        float pitchsin = Mathf.Sin(pitch);
+
+        float lookX = yawsin * (-pitchcos); // probably actually lookZ
+        Debug.Log("lookX new" + lookX);
+        float lookY = -pitchsin; // might be positive
+        float lookZ = yawcos * (-pitchcos); // might be lookX
+        Debug.Log("lookZ new" + lookZ);
+
+        float hvel = (new Vector3(moveVecPerFrame.x, 0, moveVecPerFrame.z)).magnitude;
+        float hlook = pitchcos;
+        float sqrpitchcos = pitchcos * pitchcos;
+
+        // actually applying values
+        moveVecPerFrame += new Vector3(0, -0.08f + Mathf.Cos(pitch) * Mathf.Cos(pitch) * 0.06f, 0);
+
+        if (moveVecPerFrame.y < 0 && hlook > 0) {
+            // moving towards ground and not looking directly up or down
+            float yacc = moveVecPerFrame.y * -0.1f * sqrpitchcos;
+            moveVecPerFrame += new Vector3(lookX * yacc / hlook, yacc, lookZ * yacc / hlook);
+        }
+
+        if (pitch < 0) {
+            float yacc = hvel * -pitchsin * 0.04f;
+            moveVecPerFrame += new Vector3(lookX * yacc / hlook, yacc * 3.5f, lookZ * yacc / hlook);
+        }
+
+        if (hlook > 0) {
+            moveVecPerFrame += new Vector3((lookX / hlook * hvel - moveVecPerFrame.x) * 0.1f, 0, (lookZ / hlook * hvel - moveVecPerFrame.z) * 0.1f);
+            // this.velX += (lookX / hlook * hvel - this.velX) * 0.1;
+			// this.velZ += (lookZ / hlook * hvel - this.velZ) * 0.1;
+        }
+
+        moveVecPerFrame *= 0.999f; // TODO: change this to same values as code if not good
+        Debug.Log("per frame" + moveVecPerFrame);
+        rb.velocity = moveVecPerFrame / Time.fixedDeltaTime;
+        Debug.Log(rb.velocity);
+        // rb.velocity *= f;
+        // rb.velocity /= Time.deltaTime / 1000;
+    }
+
+    void GlideElytraReadable() {
+        // defining values
+        Vector3 moveVecPerFrame = rb.velocity * Time.fixedDeltaTime;
+
+        float pitch = (360-transform.eulerAngles.x) / 180f * Mathf.PI;
+        float yaw = transform.eulerAngles.y / 180f * Mathf.PI;
+
+        float yawcos = Mathf.Cos(yaw);
+        float yawsin = Mathf.Sin(yaw);
+        float pitchcos = Mathf.Cos(pitch);
+        float pitchsin = Mathf.Sin(pitch);
+
+        float lookX = yawsin * pitchcos; // probably actually lookZ
+        // Debug.Log("lookX" + lookX);
+        float lookY = pitchsin; // might be positive
+        float lookZ = yawcos * pitchcos; // might be lookX
+        // Debug.Log("lookZ" + lookZ);
+
+        float hvel = (new Vector3(moveVecPerFrame.x, 0, moveVecPerFrame.z)).magnitude;
+        float hlook = pitchcos;
+        float sqrpitchcos = pitchcos * pitchcos;
+
+        // actually applying values
+        moveVecPerFrame += new Vector3(0, -0.08f + sqrpitchcos * 0.06f, 0);
+
+        if (moveVecPerFrame.y < 0 && hlook > 0) {
+            // moving towards ground and not looking directly up or down
+            float yacc = moveVecPerFrame.y * -0.1f * sqrpitchcos; // normal force
+            // converting vertical velocity into horizontal velocity
+            moveVecPerFrame += new Vector3(lookX * yacc / hlook, yacc, lookZ * yacc / hlook);
+        }
+
+        if (pitchsin > 0) {
+            // if pointing upward
+            // converting horizontal velocity into vertical velocity
+            float yacc = hvel * pitchsin * 0.04f;
+            moveVecPerFrame += new Vector3(-lookX * yacc / hlook, yacc * 3.5f, -lookZ * yacc / hlook);
+        }
+
+        if (hlook > 0) {
+            // horizontal acceleration based on difference between horizontal look and horizontal velocity
+            moveVecPerFrame += new Vector3((lookX / hlook * hvel - moveVecPerFrame.x) * 0.1f, 0, (lookZ / hlook * hvel - moveVecPerFrame.z) * 0.1f);
+            // this.velX += (lookX / hlook * hvel - this.velX) * 0.1;
+			// this.velZ += (lookZ / hlook * hvel - this.velZ) * 0.1;
+        }
+
+        moveVecPerFrame *= .98f; // TODO: change this to same values as code if not good
+        // Debug.Log("per frame" + moveVecPerFrame);
+        rb.velocity = moveVecPerFrame / Time.fixedDeltaTime;
+        // Debug.Log(rb.velocity);
+        // rb.velocity *= f;
+        // rb.velocity /= Time.deltaTime / 1000;
+    }
+
+    void GlideElytraForces() {
+        // defining values
+        // Vector3 moveVecPerFrame = rb.velocity * Time.fixedDeltaTime;
+
+        float pitch = (360-transform.eulerAngles.x) / 180f * Mathf.PI;
+        float yaw = transform.eulerAngles.y / 180f * Mathf.PI;
+
+        float yawcos = Mathf.Cos(yaw);
+        float yawsin = Mathf.Sin(yaw);
+        float pitchcos = Mathf.Cos(pitch);
+        float pitchsin = Mathf.Sin(pitch);
+
+        float lookX = yawsin * pitchcos; // probably actually lookZ
+        // Debug.Log("lookX" + lookX);
+        float lookY = pitchsin; // might be positive
+        float lookZ = yawcos * pitchcos; // might be lookX
+        // Debug.Log("lookZ" + lookZ);
+
+        float hvel = (new Vector3(rb.velocity.x, 0, rb.velocity.z)).magnitude;
+        float hlook = pitchcos;
+        float sqrpitchcos = pitchcos * pitchcos;
+
+        // actually applying values
+        // moveVecPerFrame += new Vector3(0, -0.08f + sqrpitchcos * 0.06f, 0);
+        rb.velocity += new Vector3(0, -0.64f + sqrpitchcos * 0.48f, 0) * 100 * Time.fixedDeltaTime;
+
+        if (rb.velocity.y < 0 && hlook > 0) {
+            // moving towards ground and not looking directly up or down
+            float yacc = rb.velocity.y * -0.1f * sqrpitchcos / 10; // normal force
+            // converting vertical velocity into horizontal velocity
+            rb.velocity += new Vector3(lookX * yacc / hlook, yacc, lookZ * yacc / hlook) * 100 * Time.fixedDeltaTime;
+        }
+
+        if (true) {
+            // if pointing upward
+            // converting horizontal velocity into vertical velocity
+            float yacc = hvel * pitchsin * 0.8f / 100;
+            rb.velocity += new Vector3(-lookX * yacc / hlook, yacc, -lookZ * yacc / hlook) * 100 * Time.fixedDeltaTime;
+        }
+
+        if (hlook > 0) {
+            // horizontal acceleration based on difference between horizontal look and horizontal velocity
+            rb.velocity += new Vector3((lookX / hlook * hvel - rb.velocity.x) * 0.1f, 0, (lookZ / hlook * hvel - rb.velocity.z) * 0.1f) * 100 * Time.fixedDeltaTime;
+            // this.velX += (lookX / hlook * hvel - this.velX) * 0.1;
+			// this.velZ += (lookZ / hlook * hvel - this.velZ) * 0.1;
+        }
+
+
+        Debug.Log(Mathf.Pow(Mathf.Pow(0.99f, 1), Time.fixedDeltaTime));
+        Vector3 newVelocity = new Vector3(rb.velocity.x, rb.velocity.y, rb.velocity.z);
+        newVelocity.x *= Mathf.Pow(Mathf.Pow(0.99f, 1), Time.fixedDeltaTime);
+        newVelocity.y *= Mathf.Pow(Mathf.Pow(0.98f, 1), Time.fixedDeltaTime);
+        newVelocity.z *= Mathf.Pow(Mathf.Pow(0.99f, 1), Time.fixedDeltaTime);
+
+        // Debug.Log("per frame" + moveVecPerFrame);
+        rb.velocity = newVelocity;
+        // Debug.Log(rb.velocity);
+        // rb.velocity *= f;
+        // rb.velocity /= Time.deltaTime / 1000;
+    }
+
+    void GlideElytraWithParameters() {
+        // defining values
+        // Vector3 moveVecPerFrame = rb.velocity * Time.fixedDeltaTime;
+
+        float pitch = (360-transform.eulerAngles.x) / 180f * Mathf.PI;
+        float yaw = transform.eulerAngles.y / 180f * Mathf.PI;
+
+        float yawcos = Mathf.Cos(yaw);
+        float yawsin = Mathf.Sin(yaw);
+        float pitchcos = Mathf.Cos(pitch);
+        float pitchsin = Mathf.Sin(pitch);
+
+        float lookX = yawsin * pitchcos; // probably actually lookZ
+        // Debug.Log("lookX" + lookX);
+        float lookY = pitchsin; // might be positive
+        float lookZ = yawcos * pitchcos; // might be lookX
+        // Debug.Log("lookZ" + lookZ);
+
+        float hvel = (new Vector3(rb.velocity.x, 0, rb.velocity.z)).magnitude;
+        float hlook = pitchcos;
+        float sqrpitchcos = pitchcos * pitchcos;
+
+        // actually applying values
+        // moveVecPerFrame += new Vector3(0, -0.08f + sqrpitchcos * 0.06f, 0);
+        rb.velocity += new Vector3(0, -elyGravity + sqrpitchcos * normalForce, 0) * Time.fixedDeltaTime;
+
+        if (rb.velocity.y < 0 && hlook > 0) {
+            // moving towards ground and not looking directly up or down
+            float yacc = rb.velocity.y * -vertToHorz * sqrpitchcos; // normal force
+            // converting vertical velocity into horizontal velocity
+            rb.velocity += new Vector3(lookX * yacc / hlook, yacc, lookZ * yacc / hlook) * Time.fixedDeltaTime;
+        }
+
+        if (true) {
+            // if pointing upward
+            // converting horizontal velocity into vertical velocity
+            float yacc = hvel * pitchsin * horizToVert;
+            rb.velocity += new Vector3(-lookX * yacc / hlook, yacc, -lookZ * yacc / hlook) * Time.fixedDeltaTime;
+        }
+
+        if (hlook > 0) {
+            // horizontal acceleration based on difference between horizontal look and horizontal velocity
+            rb.velocity += new Vector3(lookX / hlook * hvel - rb.velocity.x, 0, lookZ / hlook * hvel - rb.velocity.z) * horizToHoriz * Time.fixedDeltaTime;
+            // this.velX += (lookX / hlook * hvel - this.velX) * 0.1;
+			// this.velZ += (lookZ / hlook * hvel - this.velZ) * 0.1;
+        }
+
+
+        Debug.Log(Mathf.Pow(Mathf.Pow(0.99f, 1), Time.fixedDeltaTime));
+        Vector3 newVelocity = new Vector3(rb.velocity.x, rb.velocity.y, rb.velocity.z);
+        newVelocity.x *= Mathf.Pow(horizDecay, Time.fixedDeltaTime);
+        newVelocity.y *= Mathf.Pow(vertDecay, Time.fixedDeltaTime);
+        newVelocity.z *= Mathf.Pow(horizDecay, Time.fixedDeltaTime);
+
+        // Debug.Log("per frame" + moveVecPerFrame);
+        rb.velocity = newVelocity;
+        // Debug.Log(rb.velocity);
+        // rb.velocity *= f;
+        // rb.velocity /= Time.deltaTime / 1000;
+    }
+
 
     void Boost() {
         if(boostRemaining > 0 && (Input.GetKey(KeyCode.Space) || Input.GetKey("joystick button 0"))) {
